@@ -4,17 +4,17 @@ data AB a = Nil | Bin (AB a) a (AB a) deriving Show
 
 -- 1.
 {-
-null :: T -> Bool -- Estructura vacía
-head :: [T] -> T -- Primer elemento
-tail :: [T] -> [T] -- Todos menos el primero 
-init :: [T] -> [T] -- Todos menos el último
-last :: [T] -> T -- Último
-take :: Int -> [T] -> [T] -- Elementos hasta el n-esimo
-drop :: Int -> [T] -> [T] -- Elementos después del n-esimo
-(++) :: [T] -> [T] -> [T] -- Concatenar 2 listas
-concat :: [[T]] -> [T] -- Concatenar sublistas
-(!!) :: [T] -> Int -> T -- Elemento en posición n-esima, contando desde 0
-elem :: T -> [T] -> Bool -- Pertenece
+null :: a -> Bool -- Estructura vacía
+head :: [a] -> a -- Primer elemento
+tail :: [a] -> [a] -- Todos menos el primero 
+init :: [a] -> [a] -- Todos menos el último
+last :: [a] -> a -- Último
+take :: Int -> [a] -> [a] -- Elementos hasta el n-esimo
+drop :: Int -> [a] -> [a] -- Elementos después del n-esimo
+(++) :: [a] -> [a] -> [a] -- Concatenar 2 listas
+concat :: [[a]] -> [a] -- Concatenar sublistas
+(!!) :: [a] -> Int -> a -- Elemento en posición n-esima, contando desde 0
+elem :: a -> [a] -> Bool -- Pertenece
 -}
 
 -- 2.a.
@@ -82,7 +82,7 @@ suma :: [Float] -> Float
 suma [] = 0
 suma (x:xs) = x + suma xs
 
-longitud :: [Float] -> Int
+longitud :: [a] -> Int
 longitud [] = 0
 longitud (x:xs) = 1 + longitud xs
 
@@ -120,6 +120,21 @@ productoAB :: AB Int -> Int
 productoAB Nil = 1
 productoAB (Bin (hijo_izq) nodo (hijo_der)) = (productoAB hijo_izq) * nodo * (productoAB hijo_der)
 
+-- teórica 19/03/2024
+merge :: (a -> a -> Bool) -> [a] -> [a] -> [a]
+merge _ [] [] = []
+merge _ xs [] = xs
+merge _ [] ys = ys
+merge gt (x:xs) (y:ys)
+  | x `gt` y = y : merge gt (x:xs) ys
+  | otherwise = x : merge gt xs (y:ys)
+
+mergesort :: (a -> a -> Bool) -> [a] -> [a]
+mergesort gt (x1:x2:xs) = merge gt (mergesort gt (take l (x1:x2:xs))) (mergesort gt (drop l (x1:x2:xs)))
+  where
+    l = (longitud (x1:x2:xs)) `div` 2
+mergesort _ xs = xs
+
 main :: IO ()
 main = do
   print ("2.a.", valorAbsoluto (-8.0), valorAbsoluto 5.0)
@@ -134,3 +149,5 @@ main = do
   print ("5.a.", vacioAB Nil, vacioAB (Bin (Bin (Nil) False (Bin (Nil) True (Nil))) True (Nil)))
   print ("5.b.", showAB (negacionAB (Nil::AB Bool)), showAB (negacionAB (Bin (Bin (Nil) False (Bin (Nil) True (Nil))) True (Nil))))
   print ("5.c.", productoAB Nil, productoAB (Bin (Bin (Nil) 3 (Bin (Nil) 5 (Nil))) 2 (Nil)))
+  print("teo.merge", merge (>) [1,3,4,10,13,25] [1, 2,7,12,15,30])
+  print("teo.mergesort", mergesort (>) [1,16,4,32,(-13),25,2])
