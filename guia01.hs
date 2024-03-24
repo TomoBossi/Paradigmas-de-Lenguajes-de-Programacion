@@ -257,6 +257,8 @@ esABB = recAB (\pRes1 l n r pRes2 -> pRes1 && pRes2 && ordChild l (<=) n && ordC
 -- 14.2.
 
 -- 15.a.
+data AIH a = Hoja a | BinI (AIH a) (AIH a)
+
 -- 15.b.
 -- 15.c.
 -- 15.d.
