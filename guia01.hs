@@ -67,7 +67,7 @@ mejorSegún' f x = head (mejorParcialSegún f x)
         collapse f x (y:ys) = if f x y then (x:ys) else (y:ys)
 
 mejorSegún :: (a -> a -> Bool) -> [a] -> a
-mejorSegún f y = foldr (\x partialResult -> if f x partialResult then x else partialResult) (last y) y
+mejorSegún f y = foldr (\x partialResult -> if f x partialResult then x else partialResult) (last y) y -- exception on empty list
 
 -- 3.3.
 sumasParciales' :: Num a => [a] -> [a]
@@ -151,7 +151,7 @@ sumaMat' :: [[Int]] -> [[Int]] -> [[Int]]
 sumaMat' = zipWith (\xi yi -> (zipWith (\xij yij -> xij + yij) xi yi))
 
 sumaMat :: [[Int]] -> [[Int]] -> [[Int]]
-sumaMat = zipWith (zipWith (\xij yij -> xij + yij))
+sumaMat = (zipWith . zipWith) (+) -- :O
 
 -- 9.2.
 concatSublists :: [[a]] -> [a]
@@ -187,22 +187,16 @@ iterateN n f x = generateBase (\xs -> length xs - 1 == n) x f
 
 -- 10.4.
 generateFrom' :: (a -> Bool) -> (a -> a) -> [a] -> [a] -- Tuve que cambiar los tipos para poder usar takeWhile e iterate
-generateFrom' stop next xs = takeWhile (\ys -> not (stop ys)) (iterate next (last xs))
+generateFrom' stop next xs = takeWhile (\ys -> (not . stop) ys) (iterate next (last xs))
 
 -- 11.1.
--- foldNat :: (Integer -> Integer -> Integer) -> Integer -> Integer
--- foldNat _ 0 = 0
--- foldNat _ 1 = 1
--- foldNat f n = f n (foldNat f (n - 1))
-
-foldNat :: (Integer -> Integer) -> Integer -> Integer
-foldNat f 0 = f 0
-foldNat f 1 = f 1
-foldNat f n = f (foldNat f (n - 1))
+foldNat :: (Integer -> Integer) -> Integer -> Integer -> Integer
+foldNat _ z 0 = z
+foldNat f z n = f (foldNat f z (n - 1))
 
 -- 11.2.
 potencia :: Integer -> Integer -> Integer
-potencia n m = foldNat (n*) m -- n**m
+potencia n m = foldNat (n*) 1 m -- n**m
 
 -- 12.1.
 data Polinomio a = X | Cte a | Suma (Polinomio a) (Polinomio a) | Prod (Polinomio a) (Polinomio a)
@@ -216,7 +210,62 @@ evaluar x (Prod p1 p2) = (evaluar x p1) * (evaluar x p2)
 -- 13.1.
 data AB a = Nil | Bin (AB a) a (AB a)
 
+foldAB :: (b -> a -> b -> b) -> b -> AB a -> b -- (foldAB Bin Nil) es la identidad
+foldAB _ zNil Nil = zNil
+foldAB f zNil (Bin l n r) = f (foldAB f zNil l) n (foldAB f zNil r)
 
+recAB :: (b -> AB a -> a -> AB a -> b -> b) -> b -> AB a -> b
+recAB _ zNil Nil = zNil
+recAB f zNil (Bin l n r) = f (recAB f zNil l) l n r (recAB f zNil r)
+
+-- 13.2.
+esNil :: AB a -> Bool
+esNil Nil = True
+esNil _ = False
+
+altura :: AB a -> Int
+altura = foldAB (\pRes1 x pRes2 -> max pRes1 pRes2 + 1) 0
+
+cantNodos :: AB a -> Int
+cantNodos = foldAB (\pRes1 x pRes2 -> pRes1 + 1 + pRes2) 0
+
+-- 13.3.
+mejorSegúnAB :: (a -> a -> Bool) -> AB a -> a
+mejorSegúnAB f (Bin l n r) = foldAB (\pRes1 x pRes2 -> select f pRes1 x pRes2) n (Bin l n r) -- exception on empty tree
+  where
+    select :: (a -> a -> Bool) -> a -> a -> a -> a -- f l n r result
+    select f x y z
+      | f x y && f x z = x
+      | f y x && f y z = y
+      | f z x && f z y = z
+      | otherwise = x
+
+-- 13.4.
+esABB :: Ord a => AB a -> Bool
+esABB = recAB (\pRes1 l n r pRes2 -> pRes1 && pRes2 && ordChild l (<=) n && ordChild r (>=) n) True
+  where
+    ordChild :: Ord a => AB a -> (a -> a -> Bool) -> a -> Bool
+    ordChild Nil _ _ = True
+    ordChild (Bin _ nSub _) f n = f nSub n
+
+-- 13.5.
+-- esNil no requiere recursión.
+-- altura, cantNodos y mejorSegúnAB no requieren operar sobre los subárboles directamente -> foldAB
+-- esABB requiere operar sobre los subárboles directamente, en relación a su nodo -> recAB
+
+-- 14.1.
+-- 14.2.
+
+-- 15.a.
+-- 15.b.
+-- 15.c.
+-- 15.d.
+
+-- 16.1.
+-- 16.2.
+-- 16.3.a.
+-- 16.3.b.
+-- 16.3.c.
 
 main :: IO ()
 main = do
