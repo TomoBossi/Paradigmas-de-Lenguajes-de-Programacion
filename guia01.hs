@@ -50,7 +50,7 @@ addLast y xs = xs ++ [y]
 -- addLast' y (x:xs) = x:addLast y xs
 
 (++>) :: [a] -> [a] -> [a]
-(++>) x y = foldr (\z pRes -> addLast z pRes) x (reverse y)
+(++>) xs ys = foldr (\z pRes -> [z] ++ pRes) ys xs
 
 filter' :: (a -> Bool) -> [a] -> [a]
 filter' f = foldr (\x pRes -> if f x then x:pRes else pRes) []
@@ -60,7 +60,7 @@ map' f = foldr (\x pRes -> (f x):pRes) []
 
 -- 3.2.
 mejorSegún :: (a -> a -> Bool) -> [a] -> a
-mejorSegún f y = foldr (\x pRes -> select f x pRes) (last y) y -- exception on empty tree
+mejorSegún f = foldr1 (\x pRes -> select f x pRes) -- exception on empty tree
   where
     select :: (a -> a -> Bool) -> a -> a -> a
     select f x y
@@ -69,7 +69,7 @@ mejorSegún f y = foldr (\x pRes -> select f x pRes) (last y) y -- exception on 
 
 -- 3.3.
 sumasParciales :: Num a => [a] -> [a]
-sumasParciales xs = foldr (\y pRes -> if (null pRes) then [y] else addLast (y + last pRes) pRes) [] (reverse xs)
+sumasParciales xs = foldl (\acc x -> if null acc then [x] else acc ++ [(last acc) + x]) [] xs
 
 -- sumasParciales' :: Num a => [a] -> [a] -- Recursion explicita
 -- sumasParciales' (x1:x2:xs) = x1:(sumasParciales' (x1+x2:xs))
@@ -85,36 +85,66 @@ enumerate xs = foldr (\x pRes -> if null pRes then [((length xs) - 1, x)] else (
 -- enumerate' i (x:xs) = (i, x):(enumerate (i+1) xs) 
 
 sumIndexes :: (Eq a, Num a) => (Int -> Bool) -> [a] -> a
-sumIndexes f xs = foldr (\(i, y) pRes -> if f i then y + pRes else pRes) 0 (enumerate xs) -- Duda: ¿Cuenta como usar foldr?
+sumIndexes f = ((foldr (\(i, y) pRes -> if f i then y + pRes else pRes) 0) . enumerate)
+-- sumIndexes f xs = foldr (\(i, y) pRes -> if f i then y + pRes else pRes) 0 (enumerate xs) -- Cuenta como usar foldr, no cuenta como recursión estructural
 
 sumAlt :: (Eq a, Num a) => [a] -> a
-sumAlt xs = (sumIndexes even xs) - (sumIndexes odd xs)
+sumAlt = foldr1 (-)
+
+-- sumAlt' :: (Eq a, Num a) => [a] -> a
+-- sumAlt' xs = (sumIndexes even xs) - (sumIndexes odd xs)
 
 -- 3.5.
 sumAltRev :: (Eq a, Num a) => [a] -> a
-sumAltRev x = sumAlt (reverse x) -- Probablemente no es lo que quiere la guía
+sumAltRev = foldl1 (flip (-))
 
 -- 4.1.
-permutaciones :: [a] -> [[a]] -- concatMap :: (a -> [b]) -> [a] -> [b]
+permutaciones :: [a] -> [[a]] -- concatMap :: (a -> [b]) -> [a] -> [b] ... ([a] -> [[a]]) -> [[a]] -> [[a]]
+permutaciones = foldr (\x pRes -> if null pRes then [[x]] else concatMap (insertEverywhere x) pRes) []
+  where
+    insertEverywhere :: a -> [a] -> [[a]]
+    insertEverywhere x xs = foldr (\i pRes -> [(take i xs) ++ [x] ++ (drop i xs)] ++ pRes) [] [0..(length xs)]
 
 -- 4.2.
 partes :: [a] -> [[a]]
+partes = foldr (\x pRes -> concatMap (concatInserted x) pRes) [[]]
+  where
+    concatInserted :: a -> [a] -> [[a]]
+    concatInserted x xs = [xs] ++ [x:xs]
 
 -- 4.3.
 prefijos :: [a] -> [[a]]
+prefijos = foldr (\x pRes -> [[]] ++ (map ([x]++) pRes)) [[]]
 
 -- 4.4.
-sublistas :: [a] -> [[a]]
+sublistas :: Eq a => [a] -> [[a]]
+sublistas xs = foldr (\i pRes -> (slidingWindow i (last pRes)) ++ pRes) [[], xs] [1..(length xs)-1]
+
+slidingWindow :: Int -> [a] -> [[a]]
+slidingWindow n xs = foldr (\i pRes -> [drop (i-n) (take i xs)] ++ pRes) [] [n..(length xs)]
+
+-- sublistas' :: Eq a => [a] -> [[a]]
+-- sublistas' xs = foldr (\_ pRes -> filterRecr (\z zs -> elem z zs) (concatMap (\ys -> [tail ys, init ys, ys]) pRes)) [xs] xs
+
+filterRecr :: (a -> [a] -> Bool) -> [a] -> [a]
+filterRecr f = recr (\x xs pRes -> if f x xs then pRes else x:pRes) []
 
 -- 5.
 -- elementosEnPosicionesPares no es recursión estructural, por aplicar tail sobre xs
--- Estoy tentado a decir que entrelazar tampoco lo es, porque no devuelve una valor constante (depende del segundo parámetro)...
+
 -- Aún así, con preprocesamiento del input puedo reescribir elementosEnPosicionesPares con foldr:
 
 elementosEnPosicionesPares :: [a] -> [a]
 elementosEnPosicionesPares x = foldr (\(i, y) pRes -> if even i then y:pRes else pRes) [] (enumerate x)
 
--- Duda: ¿Esto implica que es recursión estructural?
+-- Esto no implica que sea recursión estructural, porque tuve que hacer un preprocesamiento al input.
+
+-- entrelazar parecería tampoco serlo, porque no devuelve una valor constante (depende del segundo parámetro)... pero...
+
+entrelazar' :: [a] -> [a] -> [a]
+entrelazar' = foldr (\x pRes -> (\ys -> if null ys then x:pRes [] else x:head ys:pRes (tail ys))) id
+
+--- En realidad devuelve una constante, una función constante! Waw!
 
 -- 6.a.
 recr :: (a -> [a] -> b -> b) -> b -> [a] -> b
@@ -132,11 +162,15 @@ insertarOrdenado :: Ord a => a -> [a] -> [a]
 insertarOrdenado e = recr (\x xs pRes -> if e < x then e:x:xs else x:pRes) []
 
 -- 7.1.
-genLista :: a -> (a -> a) -> Integer -> [a] -- Recursion explicita
-genLista initial _ 0 = [initial]
-genLista initial f n = xs ++ [f (last xs)]
-  where 
-    xs = genLista initial f (n-1)
+
+genLista :: a -> (a -> a) -> Integer -> [a]
+genLista initial f n = foldl (\acc _ -> if null acc then [initial] else acc ++ [f (last acc)]) [] (replicate (fromIntegral n) initial)
+
+-- genLista' :: a -> (a -> a) -> Integer -> [a] -- Recursion explicita
+-- genLista' initial _ 0 = [initial]
+-- genLista' initial f n = xs ++ [f (last xs)]
+--   where 
+--     xs = genLista' initial f (n-1)
 
 -- 7.2.
 desdeHasta :: Integer -> Integer -> [Integer]
@@ -147,39 +181,51 @@ mapPares :: ((a, b) -> c) -> [(a, b)] -> [c]
 mapPares f = foldr (\x pRes -> (f x):pRes) []
 
 -- 8.2.
-armarPares :: [a] -> [b] -> [(a, b)] -- Recursion explicita
-armarPares [] _ = []
-armarPares _ [] = []
-armarPares (x:xs) (y:ys) = (x, y):(armarPares xs ys)
+armarPares :: [a] -> [b] -> [(a, b)]
+armarPares = foldr (\x pRes -> (\ys -> if null ys then pRes [] else (x, head ys):(pRes (tail ys)))) (\ys -> [])
+
+-- armarPares :: [a] -> [b] -> [(a, b)] -- Recursion explicita
+-- armarPares [] _ = []
+-- armarPares _ [] = []
+-- armarPares (x:xs) (y:ys) = (x, y):(armarPares xs ys)
 
 -- 8.3.
 mapDoble :: ((a, b) -> c) -> [a] -> [b] -> [c]
 mapDoble f x y = mapPares f (armarPares x y)
 
 -- 9.1.
-sumaMat''' :: [[Int]] -> [[Int]] -> [[Int]]
-sumaMat''' x y = mapPares (\(xi, yi) -> (zipWith (\xij yij -> xij + yij) xi yi)) (armarPares x y)
-
-sumaMat'' :: [[Int]] -> [[Int]] -> [[Int]]
-sumaMat'' x y = zipWith (\xi yi -> (zipWith (\xij yij -> xij + yij) xi yi)) x y
-
-sumaMat' :: [[Int]] -> [[Int]] -> [[Int]]
-sumaMat' = zipWith (\xi yi -> (zipWith (\xij yij -> xij + yij) xi yi))
-
 sumaMat :: [[Int]] -> [[Int]] -> [[Int]]
-sumaMat = (zipWith . zipWith) (+) -- :O
+sumaMat = (zipWith . zipWith) (+) -- :O !!!
+
+-- sumaMat''' :: [[Int]] -> [[Int]] -> [[Int]]
+-- sumaMat''' x y = mapPares (\(xi, yi) -> (zipWith (\xij yij -> xij + yij) xi yi)) (armarPares x y)
+
+-- sumaMat'' :: [[Int]] -> [[Int]] -> [[Int]]
+-- sumaMat'' x y = zipWith (\xi yi -> (zipWith (\xij yij -> xij + yij) xi yi)) x y
+
+-- sumaMat' :: [[Int]] -> [[Int]] -> [[Int]]
+-- sumaMat' = zipWith (\xi yi -> (zipWith (\xij yij -> xij + yij) xi yi))
 
 -- 9.2.
-concatSublists :: [[a]] -> [a]
-concatSublists = foldr (\x pRes -> x ++ pRes) []
-
 trasponer :: [[a]] -> [[a]]
-trasponer m
-  | null (concatSublists m) = []
-  | otherwise = (firstElems):(trasponer remainingElems)
+trasponer xs = foldr (\x pRes -> concatSublists (column x) pRes) (emptySublists xs) xs
   where
-    firstElems = map head m
-    remainingElems = map tail m
+    emptySublists :: [[a]] -> [[a]]
+    emptySublists xs = replicate (length (head xs)) []
+    column :: [a] -> [[a]]
+    column = foldr (\x pRes -> [[x]] ++ pRes) []
+    concatSublists :: [[a]] -> [[a]] -> [[a]]
+    concatSublists xs ys = mapPares (\(x, y) -> x ++ y) (armarPares xs ys)
+
+-- trasponer' :: [[a]] -> [[a]] -- Recursión explicita
+-- trasponer' m
+--   | null (concatSublists m) = []
+--   | otherwise = (firstElems):(trasponer' remainingElems)
+--   where
+--     concatSublists :: [[a]] -> [a]
+--     concatSublists = foldr (\x pRes -> x ++ pRes) []
+--     firstElems = map head m
+--     remainingElems = map tail m
 
 -- 10.1.
 generate :: ([a] -> Bool) -> ([a] -> a) -> [a]
@@ -206,31 +252,31 @@ generateFrom' :: (a -> Bool) -> (a -> a) -> [a] -> [a] -- Tuve que cambiar los t
 generateFrom' stop next xs = takeWhile (\ys -> (not . stop) ys) (iterate next (last xs))
 
 -- 11.1.
-foldNat :: (Integer -> Integer) -> Integer -> Integer -> Integer
+foldNat :: (Integer -> Integer -> Integer) -> Integer -> Integer -> Integer
 foldNat _ z 0 = z
-foldNat f z n = f (foldNat f z (n - 1))
+foldNat f z n = f n (foldNat f z (n - 1))
 
 -- 11.2.
 potencia :: Integer -> Integer -> Integer
-potencia n m = foldNat (n*) 1 m -- n**m
+potencia n m = foldNat (\_ pRes -> n*pRes) 1 m -- n**m
 
 -- 12.1.
 data Polinomio a = X | Cte a | Suma (Polinomio a) (Polinomio a) | Prod (Polinomio a) (Polinomio a)
 
--- evaluar :: Num a => a -> Polinomio a -> a -- Duda: Recursion explicita?
+-- evaluar :: Num a => a -> Polinomio a -> a
 -- evaluar x (X) = x
 -- evaluar x (Cte c) = c 
 -- evaluar x (Suma p1 p2) = (evaluar x p1) + (evaluar x p2)
 -- evaluar x (Prod p1 p2) = (evaluar x p1) * (evaluar x p2)
 
-foldPol :: (a -> b) -> (b -> b -> b) -> (b -> b -> b) -> b -> Polinomio a -> b -- Duda: Recursion estructural?
+foldPol :: (a -> b) -> (b -> b -> b) -> (b -> b -> b) -> b -> Polinomio a -> b
 foldPol _ _ _ x (X) = x
 foldPol f _ _ _ (Cte c) = f c
 foldPol f fSuma fProd x (Suma p1 p2) = fSuma (foldPol f fSuma fProd x p1) (foldPol f fSuma fProd x p2)
 foldPol f fSuma fProd x (Prod p1 p2) = fProd (foldPol f fSuma fProd x p1) (foldPol f fSuma fProd x p2)
 
 evaluar :: Num a => a -> Polinomio a -> a
-evaluar x = foldPol (1*) (+) (*) x
+evaluar = foldPol id (+) (*)
 
 -- 13.1.
 data AB a = Nil | Bin (AB a) a (AB a)
@@ -299,49 +345,47 @@ espejo = foldAB (\pRes1 x pRes2 -> (Bin pRes2 x pRes1)) Nil
 --   where
 --     swap = (\pRes1 x pRes2 -> (Bin pRes2 x pRes1))
 
--- espejo'' :: AB a -> AB a -- Duda: Recursion explicita?
+-- espejo'' :: AB a -> AB a
 -- espejo'' Nil = Nil
 -- espejo'' (Bin l n r) = Bin (espejo'' r) n (espejo'' l)
 
 -- 14.2.
-mismaEstructura :: AB a -> AB b -> Bool -- Duda: Recursion explicita?
-mismaEstructura Nil Nil = True
-mismaEstructura _ Nil = False
-mismaEstructura Nil _ = False
-mismaEstructura (Bin l1 _ r1) (Bin l2 _ r2) = (mismaEstructura l1 l2) && (mismaEstructura r1 r2) 
+
+mismaEstructura :: AB a -> AB b -> Bool
+mismaEstructura = foldAB (\pRes1 _ pRes2 -> (\ab -> case ab of {Nil -> False; Bin l _ r -> pRes1 l && pRes2 r})) (\ab -> esNil ab) -- Hacer esto me hizo muy felíz :)
+
+-- mismaEstructura' :: AB a -> AB b -> Bool -- Recursión explicita
+-- mismaEstructura' Nil Nil = True
+-- mismaEstructura' _ Nil = False
+-- mismaEstructura' Nil _ = False
+-- mismaEstructura' (Bin l1 _ r1) (Bin l2 _ r2) = (mismaEstructura' l1 l2) && (mismaEstructura' r1 r2)
 
 -- 15.a.
 data AIH a = Hoja a | BinAIH (AIH a) (AIH a) deriving Show
 
 foldAIH :: (b -> b -> b) -> (a -> b) -> AIH a -> b
-foldAIH f fLeaf (Hoja h) = fLeaf h -- No es estructural, pero no se me ocurre otra forma
+foldAIH f fLeaf (Hoja h) = fLeaf h
 foldAIH f fLeaf (BinAIH l r) = f (foldAIH f fLeaf l) (foldAIH f fLeaf r)
-
--- foldAIH' :: (b -> b -> b) -> b -> AIH a -> b
--- foldAIH' _ z (Hoja _) = z -- Es estructural, pero se pierde toda información de las hojas (sirve para el inciso b, pero me parece 'nacagada)
--- foldAIH' f z (BinAIH l r) = f (foldAIH' f z l) (foldAIH' f z r)
 
 -- 15.b.
 alturaAIH :: AIH a -> Integer
-alturaAIH = foldAIH (\pRes1 pRes2 -> max pRes1 pRes2 + 1) (\h -> 1) -- Con foldAIH', el último valor sería directamente 1
+alturaAIH = foldAIH (\pRes1 pRes2 -> max pRes1 pRes2 + 1) (\h -> 1)
 
 tamañoAIH :: AIH a -> Integer
-tamañoAIH = foldAIH (\pRes1 pRes2 -> pRes1 + pRes2) (\h -> 1) -- Con foldAIH', el último valor sería directamente 1
+tamañoAIH = foldAIH (\pRes1 pRes2 -> pRes1 + pRes2) (\h -> 1)
 
 -- 15.c.
-listUnitAIH :: Int -> [AIH ()] -- No lo hice infinito (sin el Int) porque el programa se colgaba a pesar de querer hacer take x listUnitAIH
-listUnitAIH n = generateUnitAIH (\xs -> length xs > n) nextUnitAIH
+listUnitAIH :: [AIH ()]
+listUnitAIH = generateUnitAIH nextUnitAIH
 
-generateUnitAIH :: ([AIH ()] -> Bool) -> ([AIH ()] -> AIH ()) -> [AIH ()]
-generateUnitAIH stop next = generateUnitAIHfrom stop next [Hoja ()]
+generateUnitAIH :: ([AIH ()] -> AIH ()) -> [AIH ()]
+generateUnitAIH next = generateUnitAIHfrom next [Hoja ()]
 
-generateUnitAIHfrom :: ([AIH ()] -> Bool) -> ([AIH ()] -> AIH ()) -> [AIH ()] -> [AIH ()]
-generateUnitAIHfrom stop next xs
-  | stop xs = init xs
-  | otherwise = generateUnitAIHfrom stop next (xs ++ [next xs])
+generateUnitAIHfrom :: ([AIH ()] -> AIH ()) -> [AIH ()] -> [AIH ()]
+generateUnitAIHfrom next xs = (head xs):(generateUnitAIHfrom next ((next xs):xs))
 
 nextUnitAIH :: [AIH ()] -> AIH ()
-nextUnitAIH xs = nextUnitAIHhelper (last xs) (alturaAIH (last xs)) (tamañoAIH (last xs))
+nextUnitAIH xs = nextUnitAIHhelper (head xs) (alturaAIH (head xs)) (tamañoAIH (head xs))
   where 
     nextUnitAIHhelper:: AIH () -> Integer -> Integer -> AIH ()
     nextUnitAIHhelper x h s
@@ -363,10 +407,10 @@ addNextLevelUnitAIH (BinAIH l r) = BinAIH (addNextLevelUnitAIH l) r
 -- No hay caso base en el que se retorne una constante
 
 -- 16.1.
-data RoseTree a = Leaf a | Tree [RoseTree a] deriving Show
+data RoseTree a = Leaf a | Tree [RoseTree a] deriving Show -- Duda: Diferente a lo hecho en la práctica, ¿vale igual?
 
 -- 16.2.
-foldRT :: (b -> b -> b) -> (a -> b) -> b -> RoseTree a -> b -- Mismo problema que en foldAIH... ¿Creo? nuevamente, 16.3.a,b,c resolubles devolviendo constante en las hojas
+foldRT :: (b -> b -> b) -> (a -> b) -> b -> RoseTree a -> b
 foldRT _ _ z (Tree []) = z
 foldRT _ fLeaf _ (Leaf l) = fLeaf l
 foldRT f fLeaf z (Tree (x:xs)) = f (foldRT f fLeaf z x) (foldRT f fLeaf z (Tree xs))
@@ -386,10 +430,10 @@ alturaRT t = 1 + (foldRT (\x pRes -> max (x+1) pRes) (\x -> 0) 0 t)
 -- alturaRT' :: RoseTree a -> Int
 -- alturaRT' t = mejorSegún (>) (distanciasRT t) + 1
 
--- práctica 22/03/2024
+-- teórica 22/03/2024
 mapAB :: (a -> b) -> AB a -> AB b
 mapAB f = foldAB (\pRes1 n pRes2 -> (Bin pRes1 (f n) pRes2)) Nil
 
 main :: IO ()
 main = do
-  print (desdeHasta 5 10)
+  print ()
