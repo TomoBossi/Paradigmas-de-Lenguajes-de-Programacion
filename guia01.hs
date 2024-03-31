@@ -352,7 +352,7 @@ espejo = foldAB (\pRes1 x pRes2 -> (Bin pRes2 x pRes1)) Nil
 -- 14.2.
 
 mismaEstructura :: AB a -> AB b -> Bool
-mismaEstructura = foldAB (\pRes1 _ pRes2 -> (\ab -> case ab of {Nil -> False; Bin l _ r -> pRes1 l && pRes2 r})) (\ab -> esNil ab) -- Hacer esto me hizo muy felíz :)
+mismaEstructura = foldAB (\pRes1 _ pRes2 -> (\ab -> case ab of {Nil -> False; Bin l _ r -> pRes1 l && pRes2 r})) esNil -- Hacer esto me hizo muy felíz :)
 
 -- mismaEstructura' :: AB a -> AB b -> Bool -- Recursión explicita
 -- mismaEstructura' Nil Nil = True
