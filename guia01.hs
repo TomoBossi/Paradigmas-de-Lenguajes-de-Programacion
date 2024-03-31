@@ -407,7 +407,7 @@ addNextLevelUnitAIH (BinAIH l r) = BinAIH (addNextLevelUnitAIH l) r
 -- No hay caso base en el que se retorne una constante
 
 -- 16.1.
-data RoseTree a = Leaf a | Tree [RoseTree a] deriving Show -- Duda: Diferente a lo hecho en la práctica, ¿vale igual?
+data RoseTree a = Leaf a | Tree [RoseTree a] deriving Show -- Diferente a lo hecho en la práctica (en mi caso sólo hay información en las hojas), vale igual porque el ejercicio no aclara ni requiere una u otra cosa
 
 -- 16.2.
 foldRT :: (b -> b -> b) -> (a -> b) -> b -> RoseTree a -> b
