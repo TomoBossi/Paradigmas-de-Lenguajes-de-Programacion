@@ -1,0 +1,910 @@
+Obs.: Falta formalizar el principio y el final de cada ejercicio, incluyendo cuantificadores, tipado y traits. Falta también no omitir "= True" donde lo hice.
+
+1.1.
+Por principio de extensionalidad para pares, p = (x, y) y basta ver:
+intercambiar (intercambiar (x, y)) = (x, y)
+
+En efecto, partiendo del lado izquierdo de la igualdad:
+= intercambiar (y, x) (def. intercambiar)
+= (x, y) (def. intercambiar)
+
+1.2.
+Por principio de extensionalidad para pares (aplicado dos veces), p = (x, (y, z)) y basta ver:
+asociarD (asociarI (x, (y, z))) = (x, (y, z))
+
+En efecto, partiendo del lado izquierdo de la igualdad:
+= asociarD ((x, y), z) (def. asociarI)
+= (x, (y, z)) (def. asociarD)
+
+1.3.
+Por principio de extensionalidad para sumas, p = Left x o p = Right y y basta ver que se cumplan {1} y {2}:
+{1} espejar (espejar (Left x)) = Left x
+{2} espejar (espejar (Right y)) = Right y
+
+En efecto, partiendo de los lados izquierdos de las igualdades:
+{1}
+= espejar (Right x) (def. espejar)
+= Left x (def. espejar)
+{2}
+= espejar (Left y) (def. espejar)
+= Right y (def. espejar)
+
+1.4. Duda: No usé extensionalidad...?
+Partiendo del lado izquierdo de la igualdad, flip (flip f) x y:
+= flip f y x (def. flip, aplicando el flip más externo)
+= f x y (def. flip)
+
+1.5. Duda: No usé extensionalidad...?
+Partiendo del lado izquierdo de la igualdad, curry (uncurry f) x y:
+= uncurry f (x, y) (def. curry)
+= f x y (def. uncurry)
+
+2.1.
+Por extensionalidad funcional aplicada iterativamente, basta probar flip . flip f x y = id f x y, sabiendo que id x = x para todo x:
+= flip (flip f x y) (def. composición .)
+= flip (f y x) (def. flip)
+= f x y (def. flip)
+= id f x y (def. id)
+
+2.2.
+Por extensionalidad funcional, basta probar uncurry (curry f x y) = f x y:
+= uncurry f (x, y) (def. curry)
+= f x y (def. uncurry)
+
+2.3.
+Por exensionalidad funcional, basta probar flip const x y = const id x y, sabiendo que const x y = x:
+Desde la izquierda:
+= const y x (def. flip)
+= y (def. const)
+Desde la derecha:
+= id y (def. const)
+= y (def. id)
+
+2.4.
+Por extensionalidad fucnional, basta probar (h . g) . f x = h . (g . f) x (con x::a):
+Desde la izquierda:
+= h . g (f x) (def composición .)
+= h (g (f x)) (def composición .)
+Desde la derecha:
+= h (g . f x) (def composición .)
+= h (g (f x)) (def composición .)
+
+3.1.
+P(xs): length (duplicar xs) = 2 * length xs
+- Caso base: 
+QVQ P([]): length (duplicar []) = 2 * length []
+Desde la izquierda:
+= length [] {D0}
+= 0 {L0}
+Desde la derecha:
+= 2 * 0 = 0 {L0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): length (duplicar xs) = 2 * length xs => length (duplicar x:xs) = 2 * length x:xs
+{HI} length (duplicar xs) = 2 * length xs
+{TI} length (duplicar x:xs) = 2 * length x:xs
+Desde la izquierda de {TI}:
+= length x:x:duplicar xs {D1}
+= 1 + length x:duplicar xs {L1}
+= 1 + 1 + length duplicar xs {L1}
+= 1 + 1 + 2 * length xs = 2 + 2 * length xs = 2 * (1 + length xs) {HI}
+Desde la derecha de {TI}:
+= 2 * (1 + length xs) {L1}
+
+3.2.
+Inducción sobre xs con ys libre:
+P(xs): length (append xs ys) = length xs + length ys
+- Caso base:
+QVQ P([]): length (append [] ys) = length [] + length ys
+Desde la izquierda:
+= length ys {A0}
+Desde la derecha:
+= 0 + length ys = length ys {L0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): length (append xs ys) = length xs + length ys => length (append x:xs ys) = length x:xs + length ys
+{HI} length (append xs ys) = length xs + length ys
+{TI} length (append x:xs ys) = length x:xs + length ys
+Desde la izquierda de {TI}:
+= length x:(append xs ys) {A1}
+= 1 + length (append xs ys) {L1}
+= 1 + length xs + length ys {HI}
+Desde la derecha de {TI}:
+= 1 + length xs + length ys {L1}
+
+3.3.
+Sabiendo que:
+.... map :: (a -> b) -> [a] -> [b]
+{M0} map f [] = []
+{M1} map f (x : xs) = f x : map f xs
+
+P(xs): length (map f xs) = length xs
+- Caso base:
+QVQ P([]): length (map f []) = length []
+Desde la izquierda:
+= length [] {M0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): length (map f xs) = length xs => length (map f x:xs) = length x:xs
+{HI} length (map f xs) = length xs
+{TI} length (map f x:xs) = length x:xs
+Desde la izquierda de {TI}:
+= length (f x):(map f xs) {M1}
+= 1 + length (map f xs) {L1}
+= 1 + length xs {HI}
+Desde la derecha de {TI}:
+= 1 + length xs {L1}
+
+3.4.
+Sabiendo que:
+.... filter :: (a -> Bool) -> [a] -> [a]
+{F0} filter p [] = []
+{F1} filter p (x : xs) = if p x then x : filter p xs else filter p xs
+
+.... elem :: Eq a => a -> t a -> Bool
+{E0} elem e [] = False
+{E1} elem e (x:xs) = e == x || elem e xs
+
+
+P(xs): (elem e (filter p xs) = True) => (elem e xs = True)
+Por simplicidad, omito "= True".
+- Caso base:
+QVQ P([]): elem e (filter p []) => elem e []
+Desde la izquierda:
+= elem e [] {F0}
+p => p, tautológico
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): (elem e (filter p xs) => elem e xs) => (elem e (filter p x:xs) => elem e x:xs)
+{HI} elem e (filter p xs) => elem e xs
+{TI} elem e (filter p x:xs) => elem e x:xs
+Desde la izquierda de {TI}:
+= elem e (if p x then x : filter p xs else filter p xs) {F1}
+= if p x then (e == x || elem e (filter p xs)) else (elem e (filter p xs)) {E1}
+=> if p x then (e == x || elem e xs) else (elem e xs) {HI}
+Desde la derecha de {TI}:
+= e == x || elem e xs {E1}
+Queda por verse que sea cierto:
+if p x then (e == x || elem e xs) else (elem e xs) => e == x || elem e xs
+Esto puede evidenciarse separando en casos según (p x) y ¬(p x):
+Si (p x), QVQ (e == x || elem e xs) => (e == x || elem e xs). Esto es tautológico (p => p).
+Si ¬(p x), QVQ (elem e xs) => (e == x || elem e xs). Se ve fácilmente que esto también es tautológico (p => q v p).
+
+3.5. Duda: No sé si es válida la parte de reescribir ponerAlFinal por conveniencia...
+Sabiendo que:
+..... foldr :: (a -> b -> b) -> b -> [a] -> b
+{FR0} foldr f z [] = z
+{FR1} foldr f z (x : xs) = f x (foldr f z xs)
+
+Reescribiendo ponerAlFinal para conveniencia:
+.... ponerAlFinal :: [a] -> a -> [a]
+{P0} ponerAlFinal [] x = [x]                         -- (= foldr (:) (x:[]) [], {FR0})
+{P1} ponerAlFinal (x':xs) x = x':(ponerAlFinal xs x) -- (= x':(foldr (:) (x:[]) xs), {FR1} y {P0} de la guía)
+
+P(xs): length (ponerAlFinal xs x) = 1 + length xs
+- Caso base:
+QVQ P([]): length (ponerAlFinal [] x) = 1 + length []
+Desde la izquierda:
+= length [x] = length x:[] {P0}
+= 1 + length [] {L1}
+- Caso inductivo:
+QVQ P(xs) => P(x':xs): length (ponerAlFinal xs x) = 1 + length xs => length (ponerAlFinal x':xs x) = 1 + length x':xs
+{HI} length (ponerAlFinal xs x) = 1 + length xs
+{TI} length (ponerAlFinal x':xs x) = 1 + length x':xs
+Desde la izquierda de {TI}:
+= length x':(ponerAlFinal xs x) {P1}
+= 1 + length (ponerAlFinal xs x) {L1}
+= 1 + 1 + length xs {HI}
+Desde la derecha de {TI}:
+= 1 + 1 + length xs {L1}
+
+3.6.
+P(xs): head (reverse (ponerAlFinal xs x)) = x
+- Caso base:
+QVQ P([]): head (reverse (ponerAlFinal [] x)) = x
+Desde la izquierda:
+= head (reverse [x]) {P0}
+= head (foldl (flip (:)) [] [x]) = head (foldl (flip (:)) ((flip (:)) [] x)) [] = head x:[] = head [x] {R0 y def. foldl}
+= x {def. head}
+- Caso inductivo:
+QVQ P(xs) => P(x':xs): head (reverse (ponerAlFinal xs x)) = x => head (reverse (ponerAlFinal x':xs x)) = x
+{HI} head (reverse (ponerAlFinal xs x)) = x
+{TI} head (reverse (ponerAlFinal x':xs x)) = x
+Desde la izquierda de {TI}:
+= head (reverse x':(ponerAlFinal xs x)) {P1}
+= head ((reverse (ponerAlFinal xs x)) ++ [x']) {AUX1}
+= head (reverse (ponerAlFinal xs x)) {AUX2, considerando que ponerAlFinal xs x necesariamente tiene al menos 1 elemento (caso xs = [])}
+= x {HI}
+
+AUX1(xs): reverse x:xs = (reverse xs) ++ [x]
+- Caso base:
+QVQ AUX1([]): reverse x:[] = (reverse []) ++ [x]
+Desde la izquierda:
+= reverse [x] {def. :}
+= [x] {R0 y def. foldl, ver ej. 3.6.}
+Desde la derecha:
+= [] ++ [x] {R0}
+= [x] {++}
+- Caso inductivo:
+QVQ AUX1(xs) => AUX1(x':xs): reverse x:xs = (reverse xs) ++ [x] = x => reverse x:x':xs = (reverse x':xs) ++ [x]
+{HI} reverse x:xs = (reverse xs) ++ [x]
+{TI} reverse x:x':xs = (reverse x':xs) ++ [x]
+Desde la izquierda de {TI}:
+= reverse x':xs ++ [x] {HI}
+
+AUX2(x':xs): head ((x':xs) ++ [x]) = head (x':xs) -- Obs.: No requiere inducción...
+Desde la izquierda:
+= head (x':(xs ++ [x])) {AUX3}
+= x' (def. head)
+Desde la derecha:
+= x' (def. head)
+
+AUX3(xs): (x':xs) ++ ys = x':(xs ++ ys) -- Obs.: No requiere inducción...
+Desde la izquierda:
+= foldr (:) ys (x':xs) {++}
+= x':(foldr (:) ys xs) {FR1}
+Desde la derecha:
+= x':(foldr (:) ys xs) {++}
+
+4.1.
+Por extensionalidad funcional se debe demostrar P(xs): reverse . reverse xs = id xs
+- Caso base:
+QVQ P([]): reverse . reverse [] = id []
+Desde la izquierda:
+= reverse [] {R0}
+= [] {R0}
+Desde la derecha:
+= [] {def. id}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): reverse . reverse xs = id xs => reverse . reverse x:xs = id x:xs
+{HI} reverse . reverse xs = id xs
+{TI} reverse . reverse x:xs = id x:xs
+Desde la izquierda de {TI}:
+= reverse ((reverse xs) ++ [x]) {AUX1}
+= reverse [x] ++ reverse (reverse xs) {AUX4}
+= reverse [x] ++ reverse . reverse xs {def. composición .}
+= reverse [x] ++ id xs {HI}
+= [x] ++ id xs {R0}
+= x:(id xs) {++}
+= x:xs {def. id}
+Desde la derecha de {TI}:
+= x:xs {def. id}
+
+AUX4(xs): reverse (xs ++ ys) = reverse ys ++ reverse xs
+- Caso base:
+QVQ AUX4([]): reverse ([] ++ ys) = reverse ys ++ reverse []
+Desde la izquierda:
+= reverse ys {++}
+Desde la derecha:
+= reverse ys {R0}
+- Caso inductivo:
+QVQ AUX4(xs) => AUX4(x:xs): reverse (xs ++ ys) = reverse ys ++ reverse xs => reverse (x:xs ++ ys) = reverse ys ++ reverse x:xs
+{HI} reverse (xs ++ ys) = reverse ys ++ reverse xs
+{TI} reverse (x:xs ++ ys) = reverse ys ++ reverse x:xs
+Desde la izquierda de {TI}:
+= reverse x:(xs ++ ys) {AUX3}
+= reverse (xs ++ ys) ++ [x] {AUX1}
+= reverse ys ++ reverse xs ++ [x] {HI}
+Desde la derecha de {TI}:
+= reverse ys ++ reverse xs ++ [x] {AUX1}
+
+4.2. Duda: No sé si es lo que se esperaba...
+Por extensionalidad funcional se debe demostrar P(xs): append xs ys = xs ++ ys
+Por {++}, esto es lo mismo que probar P'(xs): append xs ys = foldr (:) ys xs
+Usando la definición de foldr se ve que (++) puede reescribirse como (ver ej. 3.5.):
+(++) :: [a] -> [a] -> [a]
+(++) [] ys = ys
+(++) (x:xs) ys = x : (++) xs ys
+De aquí es evidente ver que append = (++).
+
+4.3.
+Por extensionalidad funcional se debe demostrar P(xs): map id xs = id xs
+- Caso base:
+QVQ P([]): map id [] = id []
+Desde la izquierda:
+= [] {M0}
+Desde la derecha:
+= [] {def. id}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): map id xs = id xs => map id x:xs = id x:xs
+{HI} map id xs = id xs
+{TI} map id x:xs = id x:xs
+Desde la izquierda de {TI}:
+= (id x):(map id xs) {M1}
+= x:(id xs) {def. id, HI}
+= x:xs {def. id}
+Desde la derecha de {TI}:
+= x:xs {def. id}
+
+4.4.
+Por extensionalidad funcional se debe demostrar P(xs): map (g . f) xs = map g . map f xs
+- Caso base:
+QVQ P([]): map (g . f) [] = map g . map f []
+Desde la izquierda:
+= [] {M0}
+Desde la derecha:
+= map g (map f []) {def. composición .}
+= map g [] {M0}
+= [] {M0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): map (g . f) xs = map g . map f xs => map (g . f) x:xs = map g . map f x:xs
+{HI} map (g . f) xs = map g . map f xs
+{TI} map (g . f) x:xs = map g . map f x:xs
+Desde la izquierda de {TI}:
+= ((g . f) x):(map (g . f) xs) {M1}
+= ((g . f) x):(map g . map f xs) {HI}
+Desde la derecha de {TI}:
+= map g (map f x:xs) {def. composición .}
+= map g (f x)(map f xs) {M1}
+= (g (f x)):(map g (map f xs)) {M1}
+= ((g . f) x):(map g (map f xs)) {def. composición .}
+= ((g . f) x):(map g . map f xs) {def. composición .}
+
+4.5.
+Por extensionalidad funcional se debe demostrar P(xs): filter (p . f) xs = filter p . map f xs
+- Caso base:
+QVQ P([]): filter (p . f) [] = filter p . map f []
+Desde la izquierda:
+= [] {F0}
+Desde la derecha:
+= filter p (map f []) {def. composición .}
+= filter p [] {M0}
+= [] {F0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): filter (p . f) xs = filter p . map f xs => filter (p . f) x:xs = filter p . map f x:xs
+{HI} filter (p . f) xs = filter p . map f xs
+{TI} filter (p . f) x:xs = filter p . map f x:xs
+Desde la izquierda de {TI}:
+= if (p . f x) then (f x):filter (p . f) xs else filter (p . f) xs {F1}
+= if (p . f x) then (f x):(filter p . map f xs) xs else (filter p . map f xs) {HI}
+Desde la derecha de {TI}:
+= filter p (map f x:xs) {def. composición .}
+= filter p (f x):(map f xs) {M1}
+= if (p (f x)) then (f x):(filter p (map f xs)) xs else (filter p (map f xs)) {F1}
+= if (p . f x) then (f x):(filter p (map f xs)) xs else (filter p (map f xs)) {def. composición .}
+= if (p . f x) then (f x):(filter p . map f xs) xs else (filter p (map f xs)) {def. composición .}
+= if (p . f x) then (f x):(filter p . map f xs) xs else (filter p . map f xs) {def. composición .}
+
+4.6.
+Por extensionalidad funcional se debe demostrar P(xs): (elem (f e) . map f xs = True) <= (elem e xs = True)
+Por simplicidad, omito "= True".
+- Caso base:
+QVQ P([]): elem (f e) . map f [] <= elem e []
+Desde la izquierda:
+= elem (f e) (map f []) {def. composición .}
+= elem (f e) [] {M0}
+= False {E0}
+Desde la derecha:
+= False {E0}
+p => p, tautológico
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): (elem (f e) . map f xs <= elem e xs) => (elem (f e) . map f x:xs <= elem e x:xs)
+{HI} elem (f e) . map f xs <= elem e xs
+{TI} elem (f e) . map f x:xs <= elem e x:xs
+Desde la izquierda de {TI}:
+= elem (f e) (map f x:xs) {def. composición .}
+= elem (f e) (f x):(map f xs) {M1}
+= (f e) == (f x) || elem (f e) (map f xs) {E1}
+= (f e) == (f x) || elem (f e) . map f xs {def. composición .}
+= (f e) == (f x) || elem e xs {HI}
+Desde la derecha de {TI}:
+= e == x || elem e xs {E1}
+Queda por verse que sea cierto:
+e == x || elem e xs => (f e) == (f x) || elem e xs
+Esto es equivalente a:
+e == x => (f e) == (f x)
+Y esto es trivialmente verdadero.
+
+5.
+Por extensionalidad funcional se debe demostrar P(xs): zip xs ys = zip' xs ys
+Por {Z0},
+zip xs ys = foldr (\x rec ys -> if null ys then [] else (x, head ys) : rec (tail ys)) (const []) xs ys
+Entonces, llamando f a (\x rec ys -> if null ys then [] else (x, head ys) : rec (tail ys)), zip puede reescribirse como:
+...... zip :: [a] -> [b] -> [(a,b)]
+{Z''0} zip [] ys = []                  (= const [] ys, {FR0})
+{Z''1} zip (x:xs) ys = f x (zip xs) ys (= f x (foldr f (const []) xs) ys; (foldr f (const []) xs) es equivalente a (zip xs), {FR1})
+
+Obs.: Podría no haber hecho esta reescritura a priori, e ir haciendola de manera progresiva a lo largo del ejercicio (ver ej. 10. como ejemplo). 
+
+- Caso base:
+QVQ P([]): zip [] ys = zip' [] ys
+Desde la izquierda:
+= const [] ys = [] {Z0}
+Desde la derecha:
+= [] {Z'0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): zip xs ys = zip' xs ys => zip x:xs ys = zip' x:xs ys
+{HI} zip xs ys = zip' xs ys
+{TI} zip x:xs ys = zip' x:xs ys
+Desde la derecha de {TI}:
+= if null ys then [] else (x, head ys):zip' xs (tail ys) {Z'1}
+Caso 1, null ys:
+Continuando por la derecha de {TI}:
+= [] {null ys}
+Desde la izquierda de {TI}:
+= [] {Z0, al final de la recursión sobre xs se devuelve una función que devuelve [] si null ys}
+En este caso se cumple la propiedad. Queda ver que se cumpla en el caso faltante.
+Caso 2, ¬(null ys):
+Continuando por la derecha de {TI}:
+= (x, head ys):zip' xs (tail ys) {¬(null ys)}
+= (x, head ys):zip xs (tail ys) {HI}
+Desde la izquierda de {TI}:
+= f x (zip xs) ys {Z''1}
+= (x, head ys):(zip xs) (tail ys) {f, sabiendo que ¬(null ys)}
+ = (x, head ys):zip xs (tail ys) {en este contexto (zip xs) ys es equivalente a zip xs ys (testeado en GHCI)}
+Por lo tanto, en este caso también se cumple la propiedad.
+
+6.1. Duda: No sé si el final es demasiado informal...
+P(xs): elem e xs = elem e (nub xs)
+Verdadera. Todo elemento en el set de una lista está en la lista, todo elemento en una lista está en su set.
+- Caso base:
+QVQ P([]): elem e [] = elem e (nub [])
+Desde la izquierda:
+= False {E0}
+Desde la derecha:
+= elem e [] {N0}
+= False {E0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): elem e xs = elem e (nub xs) => elem e x:xs = elem e (nub x:xs)
+{HI} elem e xs = elem e (nub xs)
+{TI} elem e x:xs = elem e (nub x:xs)
+Desde la izquierda de {TI}: 
+= (e == x) || elem e xs {E1}
+= (e == x) || elem e (nub xs) {HI}
+Desde la derecha de {TI}:
+= elem e x:(nub (filter (\y -> x /= y) xs) {N1}
+= (e == x) || elem e (nub (filter (\y -> x /= y) xs) {E1}
+= (e == x) || elem e (nub xs') {renombro (filter (\y -> x /= y) xs a xs', que es xs' con todas las apariciones de x eliminadas}
+Queda por verse que sea cierto:
+(e == x) || elem e (nub xs) = (e == x) || elem e (nub xs')
+Caso 1, e == x:
+En este caso se cumple la propiedad, pues True = True.
+Caso 2, e != x:
+La expresión se reduce a elem e (nub xs) = elem e (nub xs')
+Las expresiones son casi idénticas, excepto porque xs' es xs con todas las apariciones de x eliminadas.
+Como estamos en el caso e != x esto es irrelevante, y a los fines del resultado de elem ambas listas son equivalentes.
+Por lo tanto, en este caso también se cumple la propiedad.
+
+6.2. Duda: Idem. 6.1.
+P(xs): elem e (union xs ys) = (elem e xs) || (elem e ys)
+Verdadera. Si e está en la unión, e está en una lista o en la otra (con "o" lógico, no excluyente).
+- Caso base:
+QVQ P([]): elem e (union [] ys) = (elem e []) || (elem e ys)
+Desde la izquierda:
+= elem e (nub ([] ++ ys)) {U0}
+= elem e (nub ys) {++}
+= elem e ys {6.1.}
+Desde la derecha:
+= False || elem e ys = elem e ys {E0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): elem e (union xs ys) = (elem e xs) || (elem e ys) => elem e (union x:xs ys) = (elem e x:xs) || (elem e ys)
+{HI} elem e (union xs ys) = (elem e xs) || (elem e ys)
+{TI} elem e (union x:xs ys) = (elem e x:xs) || (elem e ys)
+Desde la izquierda de {TI}:
+= elem e (nub x:xs ++ ys) {U0}
+= elem e (nub x:(xs ++ ys)) {AUX3}
+= elem e x:(nub (filter (\y -> x /= y) (xs ++ ys)) {N1}
+= (e == x) || elem e (nub (filter (\y -> x /= y) (xs ++ ys)) {E1}
+= (e == x) || elem e (nub (xs ++ ys)') {renombro (filter (\y -> x /= y) (xs ++ ys) a (xs ++ ys)', que es (xs ++ ys) con todas las apariciones de x eliminadas}
+Desde la derecha de {TI}:
+= (e == x) || (elem e xs) || (elem e ys) {E1}
+= (e == x) || elem e (union xs ys) {HI}
+= (e == x) || elem e (nub (xs ++ ys)) {U0}
+Queda por verse que sea cierto:
+(e == x) || elem e (nub (xs ++ ys)) = (e == x) || elem e (nub (xs ++ ys)')
+Caso 1, e == x:
+En este caso se cumple la propiedad, pues True = True.
+Caso 2, e != x:
+La expresión se reduce a elem e (nub (xs ++ ys)) = elem e (nub (xs ++ ys)')
+Las expresiones son casi idénticas, excepto porque (xs ++ ys)' es (xs ++ ys) con todas las apariciones de x eliminadas.
+Como estamos en el caso e != x esto es irrelevante, y a los fines del resultado de elem ambas listas son equivalentes.
+Por lo tanto, en este caso también se cumple la propiedad.
+
+6.3.
+P(xs): elem e (intersect xs ys) = (elem e xs) && (elem e ys)
+Verdadera. Si e está en la intersección, está tanto en una lista como en la otra y viceversa.
+- Caso base:
+QVQ P([]): elem e (intersect [] ys) = (elem e []) && (elem e ys)
+Desde la izquierda:
+= elem e [] {I0}
+= False {E0}
+Desde la derecha:
+= False && (elem e ys) = False {E0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): elem e (intersect xs ys) = (elem e xs) && (elem e ys) => elem e (intersect x:xs ys) = (elem e x:xs) && (elem e ys)
+{HI} elem e (intersect xs ys) = (elem e xs) && (elem e ys)
+{TI} elem e (intersect x:xs ys) = (elem e x:xs) && (elem e ys)
+Desde la derecha de {TI}:
+= ((e == x) || (elem e xs)) && (elem e ys)
+Desde la izquierda de {TI}:
+= elem e (filter (\e -> elem e ys) x:xs) {I0}
+= elem e (if (elem x ys) then x:(filter (\e -> elem e ys) xs) else (filter (\e -> elem e ys) xs)) {F1}
+= elem e (if (elem x ys) then x:(intersect xs ys) else (intersect xs ys)) {I0}
+Separando en casos:
+Caso 1, elem x ys:
+= elem e x:(intersect xs ys) {elem x ys}
+= (e == x) || elem e (intersect xs ys) {E1}
+= (e == x) || ((elem e xs) && (elem e ys)) {HI}
+Juntando esto con lo visto desde la derecha, QVQ (e == x) || ((elem e xs) && (elem e ys)) = ((e == x) || (elem e xs)) && (elem e ys)
+Caso 1.1, e == x:
+La expresión se reduce a True = elem e ys
+Como estamos en el caso elem x ys; e == x, vale elem e ys.
+Por lo tanto, en este caso se cumple la propiedad.
+Caso 1.2, e != x:
+La expresión se reduce a (elem e xs) && (elem e ys) = (elem e xs) && (elem e ys)
+Esta expresión es trivialmente verdadera, por lo que en este caso también se cumple la propiedad.
+Caso 2, ¬(elem x ys):
+= elem e (intersect xs ys) {¬(elem x ys)}
+= (elem e xs) && (elem e ys) {HI}
+Juntando esto con lo visto desde la derecha, QVQ (elem e xs) && (elem e ys) = ((e == x) || (elem e xs)) && (elem e ys)
+Caso 2.1, e == x:
+La expresión se reduce a (elem e xs) && (elem e ys) = (elem e ys)
+Como estamos en el caso ¬(elem x ys); e == x, vale ¬(elem e ys).
+En consecuencia la expresión se reduce aún más, a (elem e xs) && False = False
+Esta expresión es trivialmente verdadera, por lo que en este caso también se cumple la propiedad.
+Caso 2.2, e != x:
+La expresión se reduce a (elem e xs) && (elem e ys) = (elem e xs) && (elem e ys)
+Esta expresión es trivialmente verdadera, por lo que en este caso también se cumple la propiedad.
+Dado que se cumple la propiedad para todos los casos posibles, queda demostrado que es verdadera.
+
+6.4.
+P(xs): length (union xs ys) = length xs + length ys
+Falsa. Como union aplica nub, el largo de la unión puede ser menor a la suma de los largos de las listas.
+Contraejemplo: 
+xs = [0], ys = [0]
+Por {U0}, union xs ys = [0]
+(length [0] = 1) != (length [0] + length [0] = 1 + 1 = 2)
+
+6.5.
+P(xs): length (union xs ys) <= length xs + length ys
+Verdadera. La unión no puede ser más larga que la suma de los largos de las listas, ya que el caso de largo máximo es el de la igualdad.
+- Caso base:
+QVQ P([]): length (union [] ys) <= length [] + length ys
+Desde la izquierda:
+= length (nub ys) {U0}
+Desde la derecha:
+= 0 + length ys = length ys {L0}
+Juntando esto con lo visto por izquierda:
+length (nub ys) <= length ys {AUX5}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): length (union xs ys) <= length xs + length ys => length (union x:xs ys) <= length x:xs + length ys
+{HI} length (union xs ys) <= length xs + length ys
+{TI} length (union x:xs ys) <= length x:xs + length ys
+Desde la izquierda de {TI}:
+= length (nub x:xs ++ ys) {U0}
+= length (nub x:(xs ++ ys)) {AUX3}
+= length x:(nub (filter (\y -> x /= y) (xs ++ ys)) {N1}
+= 1 + length (nub (filter (\y -> x /= y) (xs ++ ys)) {L1}
+= 1 + length (nub (xs ++ ys)')
+Desde la derecha de {TI}:
+= 1 + length xs + length ys {L1}
+>= 1 + length (union xs ys) {HI}
+= 1 + length (nub (xs ++ ys)) {U0}
+Juntando esto con lo visto por izquierda:
+QVQ 1 + length (nub (xs ++ ys)') <= 1 + length (nub (xs ++ ys))
+Equivalente a ver que length (nub (xs ++ ys)') <= length (nub (xs ++ ys))
+Verdadero por la misma justificación que la jusitificación final en AUX5.
+
+AUX5(xs): length (nub xs) <= length xs
+- Caso base:
+QVQ AUX5([]): length (nub []) <= length []
+Desde la izquierda:
+= length [] {N0}
+= 0 {L0}
+Desde la derecha:
+= 0 {L0}
+Juntando esto con lo visto por izquierda:
+0 <= 0
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): length (nub xs) <= length xs => length (nub x:xs) <= length x:xs
+{HI} length (nub xs) <= length xs
+{TI} length (nub x:xs) <= length x:xs
+Desde la izquierda de {TI}:
+= length x:(nub xs') {N1}
+= 1 + length (nub xs') {L1}
+Desde la derecha de {TI}:
+= 1 + length xs {L1}
+>= 1 + length (nub xs) {HI}
+Juntando esto con lo visto por izquierda:
+QVQ 1 + length (nub xs') <= 1 + length (nub xs)
+Equivalente a ver que length (nub xs') <= length (nub xs)
+Esto es verdadero pues xs' es xs sin ninguna aparición de x.
+Por lo tanto el largo de nub xs' sólo puede ser menor o igual al de nub xs.
+Aunque esta justificación es tan informal que se podría haber dicho algo parecido directamente sobre la propiedad de partida...
+
+7.1.
+P(xs): foldr f z (xs ++ ys) = foldr f (foldr f z ys) xs
+- Caso base:
+QVQ P([]): foldr f z ([] ++ ys) = foldr f (foldr f z ys) []
+Desde la izquierda:
+= foldr f z ys {++}
+Desde la derecha:
+= foldr f z ys {FR0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): foldr f z (xs ++ ys) = foldr f (foldr f z ys) xs => foldr f z (x:xs ++ ys) = foldr f (foldr f z ys) x:xs
+{HI} foldr f z (xs ++ ys) = foldr f (foldr f z ys) xs
+{TI} foldr f z (x:xs ++ ys) = foldr f (foldr f z ys) x:xs
+Desde la izquierda de {TI}:
+= foldr f z (x:(xs ++ ys)) {AUX3}
+= f x (foldr f z (xs ++ ys)) {FR1}
+= f x (foldr f (foldr f z ys) xs) {HI}
+Desde la derecha de {TI}:
+= f x (foldr f (foldr f z ys) xs)
+
+7.2.
+Sabiendo que:
+..... foldl :: (b -> a -> b) -> b -> [a] -> b
+{FL0} foldl f ac [] = ac
+{FL1} foldl f ac (x : xs) = foldl f (f ac x) xs
+
+P(xs): foldl f z (xs ++ ys) = foldl f (foldl f z xs) ys
+- Caso base:
+QVQ P([]): foldl f z ([] ++ ys) = foldl f (foldl f z []) ys
+Desde la izquierda:
+= foldl f z ys {++}
+Desde la derecha:
+= foldl f z ys {FL0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): foldl f z (xs ++ ys) = foldl f (foldl f z xs) ys => foldl f z (x:xs ++ ys) = foldl f (foldl f z x:xs) ys
+{HI} foldl f z (xs ++ ys) = foldl f (foldl f z xs) ys
+{TI} foldl f z (x:xs ++ ys) = foldl f (foldl f z x:xs) ys
+Desde la izquierda de {TI}:
+= foldl f z (x:(xs ++ ys)) {AUX3}
+= foldl f (f z x) (xs ++ ys) {FL1}
+= foldl f (foldl f (f z x) xs) ys {HI}
+Desde la derecha de {TI}:
+= foldl f (foldl f (f z x) xs) ys {FL1}
+
+8.
+Sabiendo que:
+..... foldNat :: (Integer -> Integer -> Integer) -> Integer -> Integer -> Integer
+{FN0} foldNat _ z 0 = z
+{FN1} foldNat f z n = f n (foldNat f z (n - 1))
+
+...... potencia :: Integer -> Integer -> Integer
+{POT0} potencia n m = foldNat (\_ pRes -> n*pRes) 1 m -- n**m
+
+P(m): potencia n m = n^m
+- Caso base:
+QVQ P(0): potencia n 0 = n^0 = 1
+Desde la derecha:
+= 1 {POT0, FN0}
+- Caso inductivo:
+QVQ P(m) => P(m+1): potencia n m = n^m => potencia n (m+1) = n^(m+1) = n * n^m
+{HI} potencia n m = n^m
+{TI} potencia n (m+1) = n * n^m
+Desde la derecha de {TI}:
+= n * potencia n m {HI}
+Desde la izquierda de {TI}:
+= foldNat (\_ pRes -> n*pRes) 1 (m+1) {POT0}
+= (\_ pRes -> n*pRes) (m+1) (foldNat (\_ pRes -> n*pRes) 1 m) {FN1}
+= n * (foldNat (\_ pRes -> n*pRes) 1 m) {(\_ pRes -> n*pRes)}
+= n * potencia n m {POT0}
+
+9.
+Sabiendo que:
+data AB a = Nil | Bin (AB a) a (AB a)
+
+...... foldAB :: b -> (b -> a -> b -> b) -> AB a -> b
+{FAB0} foldAB zNil _ Nil = zNil
+{FAB1} foldAB zNil f (Bin l n r) = f (foldAB zNil f l) n (foldAB zNil f r)
+
+.... altura :: AB a -> Int
+{H0} altura = foldAB 0 (\pRes1 _ pRes2 -> max pRes1 pRes2 + 1)
+
+..... cantNodos :: AB a -> Int
+{CN0} cantNodos = foldAB 0 (\pRes1 _ pRes2 -> pRes1 + 1 + pRes2)
+
+P(x): altura x <= cantNodos x
+- Caso base:
+QVQ P(Nil): altura Nil <= cantNodos Nil
+Desde la izquierda:
+= 0 {H0}
+Desde la derecha:
+= 0 {CN0}
+Juntando esto con lo visto por izquierda:
+0 <= 0
+- Caso inductivo:
+QVQ P(l) && P(r) => P(Bin l n r): (altura l <= cantNodos l && altura r <= cantNodos r) => (altura (Bin l n r) <= cantNodos (Bin l n r))
+{HI} altura l <= cantNodos l && altura r <= cantNodos r
+{TI} altura (Bin l n r) <= cantNodos (Bin l n r)
+Desde la izquierda de {TI}:
+= foldAB 0 (\pRes1 _ pRes2 -> max pRes1 pRes2 + 1) (Bin l n r) {H0}
+= f (foldAB 0 f l) n (foldAB 0 f r) {FAB1, llamando f a (\pRes1 _ pRes2 -> max pRes1 pRes2 + 1)}
+= 1 + max (foldAB 0 f l) (foldAB 0 f r) {f}
+= 1 + max (altura l) (altura r) {H0}
+<= 1 + max (cantNodos l) (cantNodos r) {HI, considerando que max(a,b) <= max(c,d) si a <= c, b <= d}
+Desde la derecha de {TI}:
+= foldAB (\pRes1 _ pRes2 -> pRes1 + 1 + pRes2) 0 (Bin l n r) {CN0}
+= f (foldAB 0 f l) n (foldAB 0 f r) {FAB1, llamando f a (\pRes1 _ pRes2 -> pRes1 + 1 + pRes2)}
+= 1 + (foldAB 0 f l) + (foldAB 0 f r) {f}
+= 1 + (cantNodos l) + (cantNodos r) {CN0}
+Juntando esto con lo visto por izquierda:
+QVQ 1 + max (cantNodos l) (cantNodos r) <= 1 + (cantNodos l) + (cantNodos r)
+Equivalente a ver que max (cantNodos l) (cantNodos r) <= (cantNodos l) + (cantNodos r)
+Esto es trivialmente verdadero por propiedad del máximo, considerando que cantNodos x >= 0
+
+10.
+P(x): elemAB e x = elem e . inorder x
+- Caso base:
+QVQ P(Nil): elemAB e Nil = elem e . inorder Nil
+Desde la izquierda:
+= False {A0}
+Desde la derecha:
+= elem e (inorder Nil) {def. composición .}
+= elem e [] {I0}
+= False {E0}
+- Caso inductivo:
+QVQ P(l) && P(r) => P(Bin l n r): ((elemAB e l = elem e . inorder l) && (elemAB e r = elem e . inorder r)) => (elemAB e (Bin l n r) = elem e . inorder (Bin l n r))
+{HI} (elemAB e l = elem e . inorder l) && (elemAB e r = elem e . inorder r)
+{TI} elemAB e (Bin l n r) = elem e . inorder (Bin l n r)
+Desde la izquierda de {TI}:
+= foldAB False (\ri x rd -> (e == x) || ri || rd) (Bin l n r) {A0}
+= f (foldAB False f l) n (foldAB False f r) {FAB1, llamando f a (\ri x rd -> (e == x) || ri || rd)}
+= (e == n) || (foldAB False f l) || (foldAB False f r) {f}
+= (e == n) || elemAB e le || elemAB e r {A0}
+= (e == n) || elem e . inorder l || elem e . inorder r {HI}
+Desde la derecha de {TI}:
+= elem e (inorder (Bin l n r)) {def. composición .}
+= elem e (foldAB [] (\ri x rd -> ri ++ (x:rd)) (Bin l n r)) {I0}
+= elem e (f (foldAB [] f l) n (foldAB [] f r)) {FAB1, llamando f a (\ri x rd -> ri ++ (x:rd))}
+= elem e ((foldAB [] f l) ++ n:(foldAB [] f r)) {f}
+= elem e (inorder l ++ n:(inorder r)) {I0}
+= elem e (inorder l) || elem e n:(inorder r) {AUX6}
+= elem e . inorder l || elem e n:(inorder r) {def. composición .}
+= elem e . inorder l || foldr (\x rec -> (e == x) || rec) False n:(inorder r) {E0}                      --
+= elem e . inorder l || f n (foldr f False (inorder r)) {FR1, llamando f a (\x rec -> (e == x) || rec)} -- Notar que estos 3 pasos son salteados si se tiene a {E1} (como dato, o por una reescritura previa)
+= elem e . inorder l || (e == n) || (foldr f False (inorder r)) {f}                                     --
+= elem e . inorder l || (e == n) || elem e (inorder r) {E0}
+= elem e . inorder l || (e == n) || elem e . inorder r {def. composición .}
+= (e == n) || elem e . inorder l || elem e . inorder r {conmutatividad de ||}
+
+AUX6(xs): elem e (xs ++ ys) = elem e xs || elem e ys
+- Caso base:
+QVQ P([]): elem e ([] ++ ys) = elem e [] || elem e ys
+Desde la izquierda:
+= elem e ys {++}
+Desde la derecha:
+= False || elem e ys = elem e ys {E0}
+- Caso inductivo:
+QVQ P(xs) => P(x:xs): elem e (xs ++ ys) = elem e xs || elem e ys => elem e (x:xs ++ ys) = elem e x:xs || elem e ys
+{HI} elem e (xs ++ ys) = elem e xs || elem e ys
+{TI} elem e (x:xs ++ ys) = elem e x:xs || elem e ys
+Desde la izquierda de {TI}:
+= elem e x:(xs ++ ys) {AUX3}
+= (e == x) || elem e (xs ++ ys) {E1}
+= (e == x) || elem e xs || elem e ys {HI}
+Desde la derecha de {TI}:
+= (e == x) || elem e xs || elem e ys {E1}
+
+11.1.
+La recursión utilizada en derivado sigue el esquema de recursión primitiva (ver guia01.hs, extensión de ej. 12.1.).
+
+Sabiendo que:
+data Polinomio a = X | Cte a | Suma (Polinomio a) (Polinomio a) | Prod (Polinomio a) (Polinomio a)
+
+..... foldPol :: (a -> b) -> (b -> b -> b) -> (b -> b -> b) -> b -> Polinomio a -> b
+{FPX} foldPol _ _ _ x (X) = x
+{FPC} foldPol f _ _ _ (Cte c) = f c
+{FPS} foldPol f fSuma fProd x (Suma p1 p2) = fSuma (foldPol f fSuma fProd x p1) (foldPol f fSuma fProd x p2)
+{FPP} foldPol f fSuma fProd x (Prod p1 p2) = fProd (foldPol f fSuma fProd x p1) (foldPol f fSuma fProd x p2)
+
+..... evaluar :: Num a => a -> Polinomio a -> a
+{EV0} evaluar = foldPol id (+) (*)
+
+... derivado :: Num a => Polinomio a -> Polinomio a
+... derivado poli = case poli of
+{DX}  X -> Cte 1
+{DC}  Cte _ -> Cte 0
+{DS}  Suma p q -> Suma (derivado p) (derivado q)
+{DP}  Prod p q -> Suma (Prod (derivado p) q) (Prod (derivado q) p)
+
+..... esRaiz :: Num a => a -> Polinomio a -> Bool
+{ER0} esRaiz n p = evaluar n p == 0
+
+P(p): (esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True); asumiendo Num a, p::Polinomio a
+- Caso base c:
+QVQ P(Cte c): (esRaiz 0 (Cte c) = True) => (evaluar 1 (Cte c) <= evaluar 1 (derivado (Cte c)) = True)
+Desde la izquierda:
+= (evaluar 0 (Cte c) == 0) = True {ER0}
+= (foldPol id (+) (*) 0 (Cte c) == 0) = True {EV0}
+= (id c == 0) = True {FPC}
+= (c == 0) = True {def. id}
+Desde la derecha:
+= foldPol id (+) (*) 1 (Cte c) <= evaluar 1 (derivado (Cte c)) = True {EV0}
+= id c <= evaluar 1 (derivado (Cte c)) = True {FPC}
+= c <= evaluar 1 (derivado (Cte c)) = True {def. id}
+= c <= evaluar 1 (Cte 0) = True {DC}
+= c <= foldPol id (+) (*) 1 (Cte 0) = True {EV0}
+= c <= 0 = True {FPC}
+Juntando esto con lo visto por izquierda:
+QVQ (c == 0) = True => (c <= 0) = True
+Esto es trivialmente verdadero.
+- Caso base X:
+QVQ P(X): (esRaiz 0 X = True) => (evaluar 1 X <= evaluar 1 (derivado X) = True)
+Desde la izquierda:
+= (evaluar 0 X == 0) = True {ER0}
+= (foldPol id (+) (*) 0 X == 0) = True {EV0}
+= 0 == 0 = True {FPX}
+= True
+Desde la derecha:
+= (foldPol id (+) (*) 1 X) <= evaluar 1 (derivado X) = True {EV0}
+= 1 <= evaluar 1 (derivado X) = True {FPX}
+= 1 <= evaluar 1 (Cte 1) = True {DX}
+= 1 <= (foldPol id (+) (*) 1 (Cte 1)) = True {EV0}
+= 1 <= id 1 = True {FPC}
+= 1 <= 1 = True {def. id}
+= True
+- Caso inductivo Suma:
+QVQ P(p) && P(q) => P(Suma p q): ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True)) => (esRaiz 0 (Suma p q) = True) => (evaluar 1 (Suma p q) <= evaluar 1 (derivado (Suma p q)) = True)
+{HI} ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True))
+{TI} (esRaiz 0 (Suma p q) = True) => (evaluar 1 (Suma p q) <= evaluar 1 (derivado (Suma p q)) = True)
+Desde la izquierda:
+= (evaluar 0 (Suma p q) == 0) = True {ER0}
+= (evaluar 0 p + evaluar 0 q == 0) = True {EV0, FPS, EV0}
+Desde la derecha:
+= (evaluar 1 p + evaluar 1 q <= evaluar 1 (derivado (Suma p q))) = True {EV0, FPS, EV0}
+= (evaluar 1 p + evaluar 1 q <= evaluar 1 (Suma (derivado p) (derivado q))) = True {DS}
+= (evaluar 1 p + evaluar 1 q <= evaluar 1 (derivado p) + evaluar 1 (derivado q)) = True
+Para que valga a lo que se llegó por izquierda como hipótesis de la implicación, necesariamente debe valer (evaluar 0 p == evaluar 0 q == 0) o (evaluar 0 p == - evaluar 0 q)
+El primer caso es equivalente a que valga (esRaiz 0 p && esRaiz 0 q).
+Caso 1, esRaiz 0 p && esRaiz 0 q:
+QVQ True => (evaluar 1 p + evaluar 1 q <= evaluar 1 (derivado p) + evaluar 1 (derivado q)) = True
+QVQ (evaluar 1 p + evaluar 1 q <= evaluar 1 (derivado p) + evaluar 1 (derivado q)) = True
+Sabiendo por {HI} que (evaluar 1 p <= evaluar 1 (derivado p) = True) && (evaluar 1 q <= evaluar 1 (derivado q) = True)
+Dado que evaluar 1 p, evaluar 1 q, evaluar 1 (derivado p) y evaluar 1 (derivado q) son números (Num a), reescribiendolos como a, b, c, d,
+QVQ (a <= c && b <= d) => a + b <= c + d
+QVQ (a <= c && b <= d) => 0 <= (c - a) + (d - b)
+Esto es trivialmente verdadero pues (c - a) >= 0 y (d - b) >= 0
+Caso 2, evaluar 0 p == - evaluar 0 q:
+QVQ True => ...
+
+- Caso inductivo Prod:
+QVQ P(p) && P(q) => P(Prod p q): ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True)) => (esRaiz 0 (Prod p q) = True) => (evaluar 1 (Prod p q) <= evaluar 1 (derivado (Prod p q)) = True)
+{HI} ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True))
+{TI} (esRaiz 0 (Prod p q) = True) => (evaluar 1 (Prod p q) <= evaluar 1 (derivado (Prod p q)) = True)
+
+11.2.
+P(p): (esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)
+- Caso base c:
+QVQ P(Cte c): (esRaiz 0 (Cte c) = True) => (evaluar 0 (Prod (derivado (Cte c)) X) == 0 = True)
+Desde la izquierda:
+= evaluar 0 (Cte c) == 0 = True {ER0}
+= (foldPol id (+) (*) 0 (Cte c) == 0) = True {EV0}
+= (id c == 0) = True {FPC}
+= (c == 0) = True {def. id}
+Desde la derecha:
+= (foldPol id (+) (*) 0 (Prod (derivado (Cte c)) X) == 0) = True {EV0}
+= (foldPol id (+) (*) 0 (Prod (Cte 0) X) == 0) = True {DC}
+= ((foldPol id (+) (*) 0 (Cte 0)) * (foldPol id (+) (*) 0 X) == 0) = True {FPP}
+= (0 * (foldPol id (+) (*) 0 X) == 0) = True {FPC}
+= (0 == 0) = True {(*) 0}
+= True
+Juntando esto con lo visto por izquierda:
+QVQ (c == 0) = True => True
+Esto es tautológico.
+- Caso base X:
+QVQ P(X): (esRaiz 0 X = True) => (evaluar 0 (Prod (derivado X) X) == 0 = True)
+Desde la izquierda:
+= (evaluar 0 X == 0) = True {ER0}
+= (0 == 0) = True {EV0, FPX}
+= True
+Desde la derecha:
+= (evaluar 0 (Prod (Cte 1) X) == 0) = True {DX}
+= (1 * 0 == 0) = True {EV0, FPP, FPC, def. id, FPX}
+= True
+- Caso inductivo Suma:
+QVQ P(p) && P(q) => P(Suma p q): ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True)) => (esRaiz 0 (Suma p q) = True) => (evaluar 0 (Prod (derivado (Suma p q)) X) == 0 = True)
+{HI} ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True))
+{TI} (esRaiz 0 (Suma p q) = True) => (evaluar 0 (Prod (derivado (Suma p q)) X) == 0 = True)
+
+- Caso inductivo Prod:
+QVQ P(p) && P(q) => P(Prod p q): ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True)) => (esRaiz 0 (Prod p q) = True) => (evaluar 0 (Prod (derivado (Prod p q)) X) == 0 = True)
+{HI} ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True))
+{TI} (esRaiz 0 (Prod p q) = True) => (evaluar 0 (Prod (derivado (Prod p q)) X) == 0 = True)
+
+
+
+
+
+
+
+
+
+

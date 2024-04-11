@@ -263,12 +263,6 @@ potencia n m = foldNat (\_ pRes -> n*pRes) 1 m -- n**m
 -- 12.1.
 data Polinomio a = X | Cte a | Suma (Polinomio a) (Polinomio a) | Prod (Polinomio a) (Polinomio a)
 
--- evaluar :: Num a => a -> Polinomio a -> a
--- evaluar x (X) = x
--- evaluar x (Cte c) = c 
--- evaluar x (Suma p1 p2) = (evaluar x p1) + (evaluar x p2)
--- evaluar x (Prod p1 p2) = (evaluar x p1) * (evaluar x p2)
-
 foldPol :: (a -> b) -> (b -> b -> b) -> (b -> b -> b) -> b -> Polinomio a -> b
 foldPol _ _ _ x (X) = x
 foldPol f _ _ _ (Cte c) = f c
@@ -277,6 +271,17 @@ foldPol f fSuma fProd x (Prod p1 p2) = fProd (foldPol f fSuma fProd x p1) (foldP
 
 evaluar :: Num a => a -> Polinomio a -> a
 evaluar = foldPol id (+) (*)
+
+-- Guia 02, 11.
+
+recrPol :: (a -> b) -> (b -> b -> Polinomio a -> Polinomio a -> b) -> (b -> b -> Polinomio a -> Polinomio a -> b) -> b -> Polinomio a -> b
+recrPol _ _ _ x (X) = x
+recrPol f _ _ _ (Cte c) = f c
+recrPol f fSuma fProd x (Suma p1 p2) = fSuma (recrPol f fSuma fProd x p1) (recrPol f fSuma fProd x p2) p1 p2
+recrPol f fSuma fProd x (Prod p1 p2) = fProd (recrPol f fSuma fProd x p1) (recrPol f fSuma fProd x p2) p1 p2
+
+derivado :: Num a => Polinomio a -> Polinomio a
+derivado = recrPol (const (Cte 0)) (\pRes1 pRes2 _ _ -> (Suma (pRes1) (pRes2))) (\pRes1 pRes2 p1 p2 -> (Suma (Prod pRes1 p2) (Prod pRes2 p1))) (Cte 1)
 
 -- 13.1.
 data AB a = Nil | Bin (AB a) a (AB a)
