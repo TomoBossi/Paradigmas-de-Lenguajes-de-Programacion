@@ -144,29 +144,28 @@ Sabiendo que:
 
 
 P(xs): (elem e (filter p xs) = True) => (elem e xs = True)
-Por simplicidad, omito "= True".
 - Caso base:
-QVQ P([]): elem e (filter p []) => elem e []
+QVQ P([]): elem e (filter p []) = True => elem e [] = True
 Desde la izquierda:
-= elem e [] {F0}
+= elem e [] = True {F0}
 p => p, tautológico
 - Caso inductivo:
-QVQ P(xs) => P(x:xs): (elem e (filter p xs) => elem e xs) => (elem e (filter p x:xs) => elem e x:xs)
-{HI} elem e (filter p xs) => elem e xs
-{TI} elem e (filter p x:xs) => elem e x:xs
+QVQ P(xs) => P(x:xs): (elem e (filter p xs) => elem e xs = True) => (elem e (filter p x:xs) => elem e x:xs = True)
+{HI} elem e (filter p xs) = True => elem e xs = True
+{TI} elem e (filter p x:xs) = True => elem e x:xs = True
 Desde la izquierda de {TI}:
-= elem e (if p x then x : filter p xs else filter p xs) {F1}
-= if p x then (e == x || elem e (filter p xs)) else (elem e (filter p xs)) {E1}
-=> if p x then (e == x || elem e xs) else (elem e xs) {HI}
+= elem e (if p x then x : filter p xs else filter p xs) = True {F1}
+= if p x then (e == x || elem e (filter p xs)) else (elem e (filter p xs)) = True {E1}
+=> if p x then (e == x || elem e xs) else (elem e xs) = True {HI}
 Desde la derecha de {TI}:
-= e == x || elem e xs {E1}
+= e == x || elem e xs = True {E1}
 Queda por verse que sea cierto:
-if p x then (e == x || elem e xs) else (elem e xs) => e == x || elem e xs
+if p x then (e == x || elem e xs) else (elem e xs) = True => e == x || elem e xs = True
 Esto puede evidenciarse separando en casos según (p x) y ¬(p x):
-Si (p x), QVQ (e == x || elem e xs) => (e == x || elem e xs). Esto es tautológico (p => p).
-Si ¬(p x), QVQ (elem e xs) => (e == x || elem e xs). Se ve fácilmente que esto también es tautológico (p => q v p).
+Si (p x), QVQ (e == x || elem e xs = True) => (e == x || elem e xs = True). Esto es tautológico (p => p).
+Si ¬(p x), QVQ (elem e xs = True) => (e == x || elem e xs = True). Se ve fácilmente que esto también es tautológico (p => q v p).
 
-3.5. Duda: No sé si es válida la parte de reescribir ponerAlFinal por conveniencia...
+3.5.
 Sabiendo que:
 ..... foldr :: (a -> b -> b) -> b -> [a] -> b
 {FR0} foldr f z [] = z
@@ -284,7 +283,7 @@ Desde la izquierda de {TI}:
 Desde la derecha de {TI}:
 = reverse ys ++ reverse xs ++ [x] {AUX1}
 
-4.2. Duda: No sé si es lo que se esperaba...
+4.2.
 Por extensionalidad funcional se debe demostrar P(xs): append xs ys = xs ++ ys
 Por {++}, esto es lo mismo que probar P'(xs): append xs ys = foldr (:) ys xs
 Usando la definición de foldr se ve que (++) puede reescribirse como (ver ej. 3.5.):
@@ -362,34 +361,30 @@ Desde la derecha de {TI}:
 = if (p . f x) then (f x):(filter p . map f xs) xs else (filter p . map f xs) {def. composición .}
 
 4.6.
-Por extensionalidad funcional se debe demostrar P(xs): (elem (f e) . map f xs = True) <= (elem e xs = True)
-Por simplicidad, omito "= True".
+Por extensionalidad funcional se debe demostrar P(xs): (elem (f e) (map f xs) = True) <= (elem e xs = True)
 - Caso base:
-QVQ P([]): elem (f e) . map f [] <= elem e []
+QVQ P([]): (elem (f e) (map f []) = True) <= (elem e [] = True)
 Desde la izquierda:
-= elem (f e) (map f []) {def. composición .}
-= elem (f e) [] {M0}
-= False {E0}
+= elem (f e) [] = True {M0}
+= False = True {E0}
 Desde la derecha:
-= False {E0}
+= False = True {E0}
 p => p, tautológico
 - Caso inductivo:
-QVQ P(xs) => P(x:xs): (elem (f e) . map f xs <= elem e xs) => (elem (f e) . map f x:xs <= elem e x:xs)
-{HI} elem (f e) . map f xs <= elem e xs
-{TI} elem (f e) . map f x:xs <= elem e x:xs
+QVQ P(xs) => P(x:xs): (elem (f e) (map f xs) = True <= elem e xs = True) => (elem (f e) (map f x:xs) = True <= elem e x:xs = True)
+{HI} elem (f e) (map f xs) = True <= elem e xs = True
+{TI} elem (f e) (map f x:xs) = True <= elem e x:xs = True
 Desde la izquierda de {TI}:
-= elem (f e) (map f x:xs) {def. composición .}
-= elem (f e) (f x):(map f xs) {M1}
-= (f e) == (f x) || elem (f e) (map f xs) {E1}
-= (f e) == (f x) || elem (f e) . map f xs {def. composición .}
-= (f e) == (f x) || elem e xs {HI}
+= elem (f e) (f x):(map f xs) = True {M1}
+= (f e) == (f x) || elem (f e) (map f xs) = True {E1}
+= (f e) == (f x) || elem e xs = True {HI}
 Desde la derecha de {TI}:
-= e == x || elem e xs {E1}
+= e == x || elem e xs = True {E1}
 Queda por verse que sea cierto:
-e == x || elem e xs => (f e) == (f x) || elem e xs
+e == x || elem e xs = True => (f e) == (f x) || elem e xs = True
 Esto es equivalente a:
-e == x => (f e) == (f x)
-Y esto es trivialmente verdadero.
+e == x = True => (f e) == (f x) = True
+Y esto es trivialmente verdadero por definición de función.
 
 5.
 Por extensionalidad funcional se debe demostrar P(xs): zip xs ys = zip' xs ys
@@ -773,30 +768,8 @@ Desde la izquierda de {TI}:
 Desde la derecha de {TI}:
 = (e == x) || elem e xs || elem e ys {E1}
 
-11.1.
+11.1. (pre - patch)
 La recursión utilizada en derivado sigue el esquema de recursión primitiva (ver guia01.hs, extensión de ej. 12.1.).
-
-Sabiendo que:
-data Polinomio a = X | Cte a | Suma (Polinomio a) (Polinomio a) | Prod (Polinomio a) (Polinomio a)
-
-..... foldPol :: (a -> b) -> (b -> b -> b) -> (b -> b -> b) -> b -> Polinomio a -> b
-{FPX} foldPol _ _ _ x (X) = x
-{FPC} foldPol f _ _ _ (Cte c) = f c
-{FPS} foldPol f fSuma fProd x (Suma p1 p2) = fSuma (foldPol f fSuma fProd x p1) (foldPol f fSuma fProd x p2)
-{FPP} foldPol f fSuma fProd x (Prod p1 p2) = fProd (foldPol f fSuma fProd x p1) (foldPol f fSuma fProd x p2)
-
-..... evaluar :: Num a => a -> Polinomio a -> a
-{EV0} evaluar = foldPol id (+) (*)
-
-... derivado :: Num a => Polinomio a -> Polinomio a
-... derivado poli = case poli of
-{DX}  X -> Cte 1
-{DC}  Cte _ -> Cte 0
-{DS}  Suma p q -> Suma (derivado p) (derivado q)
-{DP}  Prod p q -> Suma (Prod (derivado p) q) (Prod (derivado q) p)
-
-..... esRaiz :: Num a => a -> Polinomio a -> Bool
-{ER0} esRaiz n p = evaluar n p == 0
 
 P(p): (esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True); asumiendo Num a, p::Polinomio a
 - Caso base c:
@@ -835,14 +808,15 @@ Desde la derecha:
 QVQ P(p) && P(q) => P(Suma p q): ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True)) => (esRaiz 0 (Suma p q) = True) => (evaluar 1 (Suma p q) <= evaluar 1 (derivado (Suma p q)) = True)
 {HI} ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True))
 {TI} (esRaiz 0 (Suma p q) = True) => (evaluar 1 (Suma p q) <= evaluar 1 (derivado (Suma p q)) = True)
-Desde la izquierda:
+Desde la izquierda de {TI}:
 = (evaluar 0 (Suma p q) == 0) = True {ER0}
 = (evaluar 0 p + evaluar 0 q == 0) = True {EV0, FPS, EV0}
-Desde la derecha:
+Desde la derecha de {TI}:
 = (evaluar 1 p + evaluar 1 q <= evaluar 1 (derivado (Suma p q))) = True {EV0, FPS, EV0}
 = (evaluar 1 p + evaluar 1 q <= evaluar 1 (Suma (derivado p) (derivado q))) = True {DS}
 = (evaluar 1 p + evaluar 1 q <= evaluar 1 (derivado p) + evaluar 1 (derivado q)) = True
-Para que valga a lo que se llegó por izquierda como hipótesis de la implicación, necesariamente debe valer (evaluar 0 p == evaluar 0 q == 0) o (evaluar 0 p == - evaluar 0 q)
+Para que valga a lo que se llegó por izquierda como hipótesis de la implicación, 
+necesariamente debe valer (evaluar 0 p == evaluar 0 q == 0) o (evaluar 0 p == - evaluar 0 q)
 El primer caso es equivalente a que valga (esRaiz 0 p && esRaiz 0 q).
 Caso 1, esRaiz 0 p && esRaiz 0 q:
 QVQ True => (evaluar 1 p + evaluar 1 q <= evaluar 1 (derivado p) + evaluar 1 (derivado q)) = True
@@ -853,14 +827,17 @@ QVQ (a <= c && b <= d) => a + b <= c + d
 QVQ (a <= c && b <= d) => 0 <= (c - a) + (d - b)
 Esto es trivialmente verdadero pues (c - a) >= 0 y (d - b) >= 0
 Caso 2, evaluar 0 p == - evaluar 0 q:
-QVQ True => ...
+QVQ True => ... -- ¿No se puede seguir?
+
 
 - Caso inductivo Prod:
 QVQ P(p) && P(q) => P(Prod p q): ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True)) => (esRaiz 0 (Prod p q) = True) => (evaluar 1 (Prod p q) <= evaluar 1 (derivado (Prod p q)) = True)
 {HI} ((esRaiz 0 p = True) => (evaluar 1 p <= evaluar 1 (derivado p) = True)) && ((esRaiz 0 q = True) => (evaluar 1 q <= evaluar 1 (derivado q) = True))
 {TI} (esRaiz 0 (Prod p q) = True) => (evaluar 1 (Prod p q) <= evaluar 1 (derivado (Prod p q)) = True)
+Desde la izquierda:
+...
 
-11.2.
+11.2. (pre - patch)
 P(p): (esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)
 - Caso base c:
 QVQ P(Cte c): (esRaiz 0 (Cte c) = True) => (evaluar 0 (Prod (derivado (Cte c)) X) == 0 = True)
@@ -893,18 +870,144 @@ Desde la derecha:
 QVQ P(p) && P(q) => P(Suma p q): ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True)) => (esRaiz 0 (Suma p q) = True) => (evaluar 0 (Prod (derivado (Suma p q)) X) == 0 = True)
 {HI} ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True))
 {TI} (esRaiz 0 (Suma p q) = True) => (evaluar 0 (Prod (derivado (Suma p q)) X) == 0 = True)
+...
 
 - Caso inductivo Prod:
 QVQ P(p) && P(q) => P(Prod p q): ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True)) => (esRaiz 0 (Prod p q) = True) => (evaluar 0 (Prod (derivado (Prod p q)) X) == 0 = True)
 {HI} ((esRaiz 0 p = True) => (evaluar 0 (Prod (derivado p) X) == 0 = True)) && ((esRaiz 0 q = True) => (evaluar 0 (Prod (derivado q) X) == 0 = True))
 {TI} (esRaiz 0 (Prod p q) = True) => (evaluar 0 (Prod (derivado (Prod p q)) X) == 0 = True)
+...
 
+11.1. (post - patch)
+La recursión utilizada en derivado sigue el esquema de recursión primitiva (ver guia01.hs, extensión de ej. 12.1.).
 
+Sabiendo que:
+data Polinomio a = X | Cte a | Suma (Polinomio a) (Polinomio a) | Prod (Polinomio a) (Polinomio a)
 
+..... foldPol :: b -> (a -> b) -> (b -> b -> b) -> (b -> b -> b) -> Polinomio a -> b
+{FPX} foldPol x _ _ _ (X) = x
+{FPC} foldPol _ f _ _ (Cte c) = f c
+{FPS} foldPol x f fSuma fProd (Suma p1 p2) = fSuma (foldPol x f fSuma fProd p1) (foldPol x f fSuma fProd p2)
+{FPP} foldPol x f fSuma fProd (Prod p1 p2) = fProd (foldPol x f fSuma fProd p1) (foldPol x f fSuma fProd p2)
 
+..... sinConstantesNegativas :: Num a => Polinomio a -> Polinomio a
+{SC0} sinConstantesNegativas = foldPoli True (>= 0) (&&) (&&)
 
+... derivado :: Num a => Polinomio a -> Polinomio a
+... derivado poli = case poli of
+{DX}  X -> Cte 1
+{DC}  Cte _ -> Cte 0
+{DS}  Suma p q -> Suma (derivado p) (derivado q)
+{DP}  Prod p q -> Suma (Prod (derivado p) q) (Prod (derivado q) p)
 
+..... esRaiz :: Num a => a -> Polinomio a -> Bool
+{ER0} esRaiz n p = evaluar n p == 0
 
+..... evaluar :: Num a => a -> Polinomio a -> a
+{EV0} evaluar n = foldPol n id (+) (*)
 
+P(p): esRaiz r p = True => esRaiz r (Prod p q) = True
+- Caso base c:
+QVQ P(Cte c): esRaiz r (Cte c) = True => esRaiz r (Prod (Cte c) q) = True
+Desde la izquierda:
+= evaluar r (Cte c) == 0 = True {ER0}
+= c == 0 = True {EV0, FPC}
+Desde la derecha:
+= evaluar r (Prod (Cte c) q) == 0 = True {ER0}
+= evaluar r (Cte c) * evaluar r q == 0 = True {EV0, FPS}
+= c * evaluar r q == 0 = True {EV0, FPC}
+Juntando esto con lo visto por izquierda:
+QVQ (c == 0) = True => c * evaluar r q == 0 = True
+Si vale el antecedente, se ve que vale el consecuente por propiedad de la multiplicación por 0.
 
+- Caso base X:
+QVQ P(X): esRaiz r X = True => esRaiz r (Prod X q) = True
+Desde la izquierda:
+= evaluar r X == 0 = True {ER0}
+= r == 0 = True {EV0, FPX}
+Desde la derecha:
+= evaluar r (Prod X q) == 0 = True {ER0}
+= evaluar r X * evaluar r q == 0 = True {EV0, FPP}
+= r * evaluar r q == 0 = True {EV0, FPX}
+Juntando esto con lo visto por izquierda:
+QVQ (r == 0) = True => r * evaluar r q == 0 = True
+Si vale el antecedente, se ve que vale el consecuente por propiedad de la multiplicación por 0.
 
+- Caso inductivo Suma:
+QVQ P(p) && P(s) => P(Suma p s): (esRaiz r p = True => esRaiz r (Prod p q) = True) && (esRaiz r s = True => esRaiz r (Prod s q) = True) => (esRaiz r (Suma p s) = True => esRaiz r (Prod (Suma p s) q) = True)
+{HI} (esRaiz r p = True => esRaiz r (Prod p q) = True) && (esRaiz r s = True => esRaiz r (Prod s q) = True)
+{TI} esRaiz r (Suma p s) = True => esRaiz r (Prod (Suma p s) q) = True
+Desde la izquierda de {TI}:
+= evaluar r (Suma p s) == 0 = True {ER0}
+= evaluar r p + evaluar r s == 0 = True {EV0, FPS}
+Desde la derecha de {TI}:
+= evaluar r (Prod (Suma p s) q) == 0 = True {ER0}
+= evaluar r (Suma p s) * evaluar r q == 0 = True {EV0, FPP}
+= (evaluar r p + evaluar r s) * evaluar r q == 0 = True {EV0, FPS}
+Juntando esto con lo visto por izquierda:
+QVQ (evaluar r p + evaluar r s == 0 = True) => ((evaluar r p + evaluar r s) * evaluar r q == 0 = True)
+Esto es trivialmente verdadero. -- Obs.: No requirió HI...
+
+- Caso inductivo Prod:
+QVQ P(p) && P(s) => P(Prod p s): (esRaiz r p = True => esRaiz r (Prod p q) = True) && (esRaiz r s = True => esRaiz r (Prod s q) = True) => (esRaiz r (Prod p s) = True => esRaiz r (Prod (Prod p s) q) = True)
+{HI} (esRaiz r p = True => esRaiz r (Prod p q) = True) && (esRaiz r s = True => esRaiz r (Prod s q) = True)
+{TI} esRaiz r (Prod p s) = True => esRaiz r (Prod (Prod p s) q) = True
+Desde la izquierda de {TI}:
+= evaluar r (Prod p s) == 0 = True {ER0}
+= evaluar r p * evaluar r s == 0 = True {EV0, FPP}
+Desde la derecha de {TI}:
+= evaluar r (Prod (Prod p s) q) == 0 = True {ER0}
+= evaluar r (Prod p s) * evaluar r q == 0 = True {EV0, FPP}
+= evaluar r p * evaluar r s * evaluar r q == 0 = True {EV0, FPP}
+Juntando esto con lo visto por izquierda:
+QVQ (evaluar r p * evaluar r s == 0 = True) => (evaluar r p * evaluar r s * evaluar r q == 0 = True)
+Esto es trivialmente verdadero. -- Obs.: No requirió HI...
+
+11.2.
+P(p): sinConstantesNegativas p = True => sinConstantesNegativas (derivado p) = True
+- Caso base c:
+QVQ P(Cte c): sinConstantesNegativas (Cte c) = True => sinConstantesNegativas (derivado (Cte c)) = True
+Desde la derecha:
+= foldPol True (>=0) (&&) (&&) (derivado (Cte c)) = True {SC0}
+= foldPol True (>=0) (&&) (&&) (Cte 0) = True {DC}
+= True {FPC}
+Como el consecuente es True, es inmediato que la propiedad se cumple en este caso base.
+
+- Caso base X:
+QVQ P(X): sinConstantesNegativas X = True => sinConstantesNegativas (derivado X) = True
+Desde la derecha:
+= foldPol True (>=0) (&&) (&&) (Cte 1) = True {SC0, DX}
+= 0 <= 1 = True {FPC}
+Como el consecuente es True, es inmediato que la propiedad se cumple en este caso base.
+
+- Caso inductivo Suma:
+QVQ P(p) && P(s) => P(Suma p s): (sinConstantesNegativas p = True => sinConstantesNegativas (derivado p) = True) && (sinConstantesNegativas s = True => sinConstantesNegativas (derivado s) = True) => (sinConstantesNegativas (Suma p s) = True => sinConstantesNegativas (derivado (Suma p s)) = True)
+{HI} (sinConstantesNegativas p = True => sinConstantesNegativas (derivado p) = True) && (sinConstantesNegativas s = True => sinConstantesNegativas (derivado s) = True)
+{TI} sinConstantesNegativas (Suma p s) = True => sinConstantesNegativas (derivado (Suma p s)) = True
+Desde la izquierda de {TI}:
+= foldPol True (>=0) (&&) (&&) (Suma p s) = True {SC0}
+= foldPol True (>=0) (&&) (&&) p && foldPol True (>=0) (&&) (&&) s = True {FPS}
+= sinConstantesNegativas p && sinConstantesNegativas s = True {SC0}
+Desde la derecha de {TI}:
+= foldPol True (>=0) (&&) (&&) (Suma (derivado p) (derivado s)) = True {SC0, DS}
+= foldPol True (>=0) (&&) (&&) (derivado p) && foldPol True (>=0) (&&) (&&) (derivado s) = True {FPS}
+= sinConstantesNegativas (derivado p) && sinConstantesNegativas (derivado s) = True {SC0}
+Juntando esto con lo visto por izquierda:
+QVQ (sinConstantesNegativas p && sinConstantesNegativas s = True) => (sinConstantesNegativas (derivado p) && sinConstantesNegativas (derivado s) = True)
+Esto es verdadero por {HI}
+
+- Caso inductivo Prod:
+QVQ P(p) && P(s) => P(Prod p s): (sinConstantesNegativas p = True => sinConstantesNegativas (derivado p) = True) && (sinConstantesNegativas s = True => sinConstantesNegativas (derivado s) = True) => (sinConstantesNegativas (Prod p s) = True => sinConstantesNegativas (derivado (Prod p s)) = True)
+{HI} (sinConstantesNegativas p = True => sinConstantesNegativas (derivado p) = True) && (sinConstantesNegativas s = True => sinConstantesNegativas (derivado s) = True)
+{TI} sinConstantesNegativas (Prod p s) = True => sinConstantesNegativas (derivado (Prod p s)) = True
+Desde la izquierda de {TI}:
+= foldPol True (>=0) (&&) (&&) (Prod p s) = True {SC0}
+= foldPol True (>=0) (&&) (&&) p && foldPol True (>=0) (&&) (&&) s = True {FPP}
+= sinConstantesNegativas p && sinConstantesNegativas s = True {SC0}
+Desde la derecha de {TI}:
+= foldPol True (>=0) (&&) (&&) (Suma (Prod (derivado p) s) (Prod (derivado s) p)) = True {SC0, DP}
+= foldPol True (>=0) (&&) (&&) (Prod (derivado p) s)) && foldPol True (>=0) (&&) (&&) (Prod (derivado s) p) = True {FPS}
+= sinConstantesNegativas (derivado p) && sinConstantesNegativas s && = sinConstantesNegativas (derivado s) && sinConstantesNegativas p = True {FPP, FPP, SC0, SC0}
+Juntando esto con lo visto por izquierda:
+QVQ (sinConstantesNegativas p && sinConstantesNegativas s = True) => (sinConstantesNegativas (derivado p) && sinConstantesNegativas s && = sinConstantesNegativas (derivado s) && sinConstantesNegativas p = True)
+Esto es verdadero por {HI}
