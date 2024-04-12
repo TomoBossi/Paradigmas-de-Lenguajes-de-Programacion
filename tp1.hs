@@ -196,7 +196,7 @@ Primero nombramos a las ecuaciones conocidas para referenciarlas en la demostrac
 {F1} filter p (x : xs) = if p x then x:(filter p xs) else filter p xs
 
 ..... es_un_objeto :: Either Personaje Objeto -> Bool
-{EOL} es_un_objeto (Left p) = False
+{ - } es_un_objeto (Left p) = False
 {EOR} es_un_objeto (Right o) = True
 
 Vamos a probar la propiedad por inducción en la lista u.
@@ -229,11 +229,11 @@ Vamos a probar la propiedad por inducción en la lista u.
     = elem o (map objeto_de (if es_un_objeto x then x:(filter es_un_objeto xs) else filter es_un_objeto xs)) {F1}
     Resulta conveniente separar en casos, de acuerdo al valor de es_un_objeto x:
 
-    - Caso A1. es_un_objeto x = True:
+    - Caso A1. es_un_objeto x = True (por {EOR}, esto implica (Right x') == x = True (*)):
         = elem o (map objeto_de x:(filter es_un_objeto xs)) {es_un_objeto x = True (Caso A1.)}
         = elem o (objeto_de x):(map objeto_de (filter es_un_objeto xs)) {M1}
         = elem o (objeto_de x):(objetos_en xs) {OU}
-        = elem o x':(objetos_en xs) {es_un_objeto x = True ⇒ objeto_de (Right x) == x' = True (el antecedente vale por Caso A1.)} (*)
+        = elem o x':(objetos_en xs) {es_un_objeto x = True ⇒ objeto_de x == x' = True (el antecedente vale por Caso A1.)}
         = (o == x') || elem o (objetos_en xs) {E1}
         Nuevamente resulta conveniente separar en casos, esta vez de acuerdo al valor de (o == x'):
         
