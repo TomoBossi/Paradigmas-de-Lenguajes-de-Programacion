@@ -169,7 +169,128 @@ podemos_ganarle_a_thanos u = thanos_no_gano && (thor && stormbreaker || wanda &&
 
 {-Demostración ej. 3-}
 
--- TODO
+{-
+
+QVQ ∀ u :: Universo . ∀ o :: Objeto . elem o (objetos_en u) ⇒ elem (Right o) u
+
+Llamamos P(u): "elem o (objetos_en u) ⇒ elem (Right o) u"
+
+Primero nombramos a las ecuaciones conocidas para referenciarlas en la demostración:
+
+.... elem :: Eq a => a -> t a -> Bool
+{E0} elem e [] = False
+{E1} elem e (x:xs) = e == x || elem e xs
+
+.... objetos_en :: Universo -> [Objeto]
+{OU} objetos_en u = map objeto_de (filter es_un_objeto u)
+
+.... objeto_de :: Either Personaje Objeto -> Objeto
+{OD} objeto_de (Right o) = o
+
+.... map :: (a -> b) -> [a] -> [b]
+{M0} map f [] = []
+{M1} map f (x : xs) = (f x):(map f xs)
+
+.... filter :: (a -> Bool) -> [a] -> [a]
+{F0} filter p [] = []
+{F1} filter p (x : xs) = if p x then x:(filter p xs) else filter p xs
+
+..... es_un_objeto :: Either Personaje Objeto -> Bool
+{EOL} es_un_objeto (Left p) = False
+{EOR} es_un_objeto (Right o) = True
+
+Vamos a probar la propiedad por inducción en la lista u.
+
+- Caso base: 
+    QVQ vale P([]): "elem o (objetos_en []) ⇒ elem (Right o) []"
+    
+    Partiendo desde el antecedente:
+    = elem o (map objeto_de (filter es_un_objeto [])) {OU}
+    = elem o (map objeto_de []) {F0}
+    = elem o [] {M0}
+    = False {E0}
+
+    Partiendo desde el consecuente:
+    = False {E0}
+
+    Juntando las expresiones a las que se llegó a partir de antecedente y consecuente,
+    QVQ vale: "False ⇒ False"
+    Esto es verdadero por definición de (⇒).
+
+- Caso inductivo:
+    QVQ vale P(xs) ⇒ P(x:xs): "(elem o (objetos_en xs) ⇒ elem (Right o) xs) ⇒ (elem o (objetos_en x:xs) ⇒ elem (Right o) x:xs)"
+    Por lo tanto, nuestra hipótesis inductiva es:
+    {HI} elem o (objetos_en xs) ⇒ elem (Right o) xs
+    Y nuestra tésis inductiva es:
+    {TI} elem o (objetos_en x:xs) ⇒ elem (Right o) x:xs
+
+    Partiendo desde el antecedente de {TI}:
+    = elem o (map objeto_de (filter es_un_objeto x:xs)) {OU}
+    = elem o (map objeto_de (if es_un_objeto x then x:(filter es_un_objeto xs) else filter es_un_objeto xs)) {F1}
+    Resulta conveniente separar en casos, de acuerdo al valor de es_un_objeto x:
+
+    - Caso A1. es_un_objeto x = True:
+        = elem o (map objeto_de x:(filter es_un_objeto xs)) {es_un_objeto x = True (Caso A1.)}
+        = elem o (objeto_de x):(map objeto_de (filter es_un_objeto xs)) {M1}
+        = elem o (objeto_de x):(objetos_en xs) {OU}
+        = elem o x':(objetos_en xs) {es_un_objeto x = True ⇒ objeto_de (Right x) == x' = True (el antecedente vale por Caso A1.)} (*)
+        = (o == x') || elem o (objetos_en xs) {E1}
+        Nuevamente resulta conveniente separar en casos, esta vez de acuerdo al valor de (o == x'):
+        
+        - Caso A1.1. (o == x') = True:
+            = True {definición de ||}
+
+        - Caso A1.2. (o == x') = False:
+            = elem o (objetos_en xs) {definición de ||}
+
+    - Caso A2. es_un_objeto x = False:
+        = elem o (map objeto_de (filter es_un_objeto xs)) {es_un_objeto x = False (Caso A2.)}
+        = elem o (objetos_en xs) {OU}
+
+    Partiendo desde el consecuente de {TI}:
+    = ((Right o) == x) || elem (Right o) xs {E1}
+    Separando en casos de acuerdo al valor de ((Right o) == x):
+
+    - Caso C1. ((Right o) == x) = True:
+        = True {definición de ||}
+
+    - Caso C2. ((Right o) == x) = False:
+        = elem (Right o) xs {definición de ||} 
+
+    Juntando lo analizado partiendo desde el antecedente y en consecuente de {TI},
+    necesitamos ver que sea verdadera toda combinación de casos no contradictoria:
+
+        - Caso A1.1 && C1. es_un_objeto x = True && (o == x') = True && ((Right o) == x) = True:
+            QVQ bajo este caso vale: "True ⇒ True"
+            Esto es verdadero por definición de (⇒).
+
+        - Caso A1.1 && C2. es_un_objeto x = True && (o == x') = True && ((Right o) == x) = False:
+            Esta combinación de casos es contradictoria. Partiendo de (o == x') = True:
+            = ((Right o) == (Right x')) = True
+            = ((Right o) == x) = True
+            Esto es contradictorio con la condición ((Right o) == x) = False,
+            proveniente del caso C2.
+            Esta combinación de casos por lo tanto es imposible,
+            y en consecuencia queda descartada.
+
+        - Caso A1.2. && C1. es_un_objeto x = True && (o == x') = False && ((Right o) == x) = True:
+            Esta combinación de casos es contradictoria.
+            La justificación es idéntica a la dada para la combinación de casos A1.1 && C2.
+
+        - Caso A1.2. && C2. es_un_objeto x = True && (o == x') = False && ((Right o) == x) = False:
+            QVQ bajo este caso vale: "elem o (objetos_en xs) ⇒ elem (Right o) xs"
+            Esta expresión es exactamente nuestra {HI}, verdadera por supuesto.
+
+    Dado que la propiedad vale en todas las combinaciones de casos no contradictorias,
+    vale en el caso inductivo en general. Como además se demostró que vale en el caso base,
+    queda demostrado por inducción que vale ∀ u :: Universo . ∀ o :: Objeto,
+    como se quería probar.
+
+    (*) Aclaración: x' :: Objeto es el resultado de objeto_de x cuando se sabe a priori que x' es un objeto
+        Lo llamamos así para no confundirlo con x :: Either Personaje Objeto
+        (Por la misma razón, también vale (Right x') == x)
+
+-}
 
 {-Tests-}
 
